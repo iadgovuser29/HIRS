@@ -107,7 +107,7 @@ jobs:
           if tpm2_nvlist | grep -q 0x1c90000; then      echo "Released NVRAM for PC.";      tpm2_nvrelease -x 0x1c90000 -a 0x40000001;    fi
 
       - name: Build and configure Provisioner.NET
-        id: ubuntu_result
+        id: ubuntu_result_expand
         run: |
           echo "Building provisioner"
           cd HIRS_Provisioner.NET/hirs
@@ -124,7 +124,7 @@ jobs:
           mkdir -p /home/runner/work/logs
 
       - name: Set up test files
-        id: ubuntu_result
+        id: ubuntu_result_expand
         run: |
           echo "Placing test artifacts"
           mkdir -p /home/runner/work/efi
@@ -137,7 +137,7 @@ jobs:
           apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb       
         
       - name: Run Provisioner and Extract Ubuntu System Test Results
-        id: ubuntu_result
+        id: ubuntu_result_expand
         run: |         
           echo "Running provisioner"
           cd /home/runner/work/logs/
@@ -157,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: contains(matrix.os, 'ubuntu') && always()
         with:
-          name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result.outputs.result}}.log"
+          name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result_expand.outputs.result}}.log"
           path: /home/runner/work/logs/*.log
 
   Evaluator:
