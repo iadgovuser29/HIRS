@@ -114,25 +114,25 @@ jobs:
           dotnet deb -r linux-x64 -c Release
           
           echo "Installing provisioner"
-          apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb
+          sudo apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb
           
           echo "Copying appsettings"
-          cp /home/runner/work/HIRS/HIRS/.ci/setup/appsettings.json /usr/share/hirs/
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/appsettings.json /usr/share/hirs/
           
           echo "Creating log space"
-          mkdir -p /home/runner/work/logs
+          sudo mkdir -p /home/runner/work/logs
 
       - name: Set up test files
         run: |
           echo "Placing test artifacts"
-          mkdir -p /home/runner/work/efi
-          mkdir -p /home/runner/work/efi/EFI/tcg/cert/platform
-          mkdir -p /home/runner/work/efi/EFI/tcg/manifest/swidtag
-          mkdir -p /home/runner/work/efi/EFI/tcg/manifest/rim
-          mkdir -p /home/runner/work/hw
-          mkdir -p /home/runner/work/tpm
-          cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/
-          apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb       
+          sudo mkdir -p /home/runner/work/efi
+          sudo mkdir -p /home/runner/work/efi/EFI/tcg/cert/platform
+          sudo mkdir -p /home/runner/work/efi/EFI/tcg/manifest/swidtag
+          sudo mkdir -p /home/runner/work/efi/EFI/tcg/manifest/rim
+          sudo mkdir -p /home/runner/work/hw
+          sudo mkdir -p /home/runner/work/tpm
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/
+          sudo apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb       
         
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
