@@ -8,6 +8,7 @@ env:
   TEST_STATUS: 0
 jobs:
   DockerTests:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     outputs:
       test-result: ${{ steps.set_outputs.outputs.test-result }}

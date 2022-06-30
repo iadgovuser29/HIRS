@@ -6,6 +6,7 @@ on:
 jobs:
   # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
   Package:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,6 +22,7 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
   package_centos:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read

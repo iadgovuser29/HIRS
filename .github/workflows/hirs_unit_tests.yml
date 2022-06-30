@@ -10,6 +10,7 @@ on:
 jobs:
   # run the unit tests and package HIRS ACA, provisoner, and tools
   ACA_Provisioner_unit_tests:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -89,6 +90,7 @@ jobs:
         if-no-files-found: error 
   # Process eventlog and rim tool seperately to save time building
   tcg_eventlog_tool_tests:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -116,6 +118,7 @@ jobs:
             path: artifacts/reports/*
             if-no-files-found: ignore
   tcg_rim_tool_tests:
+    if: "!contains(github.event.commits[0].message, '[dotnet only]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
