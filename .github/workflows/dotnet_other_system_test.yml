@@ -207,26 +207,9 @@ jobs:
         id: ubuntu_result_full
         run: | 
           echo "Running provisioner"
-          cd /home/runner/work/provisionerlogs
-          logName="/home/runner/work/provisionerlogs/${{matrix.os}}-system-tests-full"
-          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim > $logName
-          sudo chmod 777 $logName
-          cat $logName
-          
-          if grep -rnw $logName -e "Provisioning successful"; 
-          then 
-            result="Pass"
-          else
-            result="Fail"
-          fi
-          sudo mv "$logName" "$logName-$result.log"
-          
-      - name: Upload Logs Ubuntu
-        uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'ubuntu') && always()
-        with:
-          name: "${{matrix.os}}-system-tests"
-          path: /home/runner/work/provisionerlogs/*.log
+          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
+          retVal=$?
+          echo "Provisioner exited with code $retVal"
 
   Evaluator:
     name: Evaluate Tests
