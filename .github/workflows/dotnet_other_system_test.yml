@@ -118,9 +118,6 @@ jobs:
           
           echo "Copying appsettings"
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/appsettings.json /usr/share/hirs/
-          
-          echo "Creating log space"
-          sudo mkdir -p /home/runner/work/logs
 
       - name: Set up test files
         run: |
@@ -132,17 +129,20 @@ jobs:
           sudo mkdir -p /home/runner/work/hw
           sudo mkdir -p /home/runner/work/tpm
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_hw.json /home/runner/work/hw/
-          sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/     
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/  
+          echo "Creating log space"
+          sudo mkdir -p /home/runner/work/provisionerlogs          
         
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
         run: |         
           echo "Running provisioner"
-          cd /home/runner/work/logs/
-          logName="${{matrix.os}}-system-tests.log"
+          cd /home/runner/work/provisionerlogs
+          logName="/home/runner/work/provisionerlogs/${{matrix.os}}-system-tests.log"
           sudo /usr/share/hirs/tpm_aca_provision > $logName
+          sudo chmod 777 $logName
           cat $logName
-
+          
           if grep -rnw $logName -e "ACA returned a positive response to the Certificate Request"; 
           then 
             result="Pass"
