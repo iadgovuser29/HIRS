@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: "Setup ACA/TPM and Run Provisioner"
+      - name: "Setup ACA and install TPM Simulator"
         run: |
           # Change dash to bash
           sudo echo "dash dash/sh boolean false" | sudo debconf-set-selections
@@ -98,7 +98,7 @@ jobs:
         run: |
           tpm2_startup --clear &
           sleep 5
-          ek_cert=certs/ek_cert.der
+          ek_cert=/home/runner/work/HIRS/HIRS/.ci/setup/certs/ek_cert.der
           echo "Writing Endorsement Key to Simulator"
           if tpm2_nvlist | grep -q 0x1c00002; then      echo "Released NVRAM for EK.";      tpm2_nvrelease -x 0x1c00002 -a 0x40000001;    fi
           size=$(cat $ek_cert | wc -c)
@@ -135,12 +135,12 @@ jobs:
           sudo mkdir -p /home/runner/work/provisionerlogs          
           sudo chmod -R 777 /home/runner/work/provisionerlogs
         
-      - name: Run Provisioner and Extract Ubuntu System Test Results
+      - name: Run Provisioner with no ACA policy
         id: ubuntu_result
         run: |         
           echo "Running provisioner"
           cd /home/runner/work/provisionerlogs
-          logName="/home/runner/work/provisionerlogs/${{matrix.os}}-system-tests.log"
+          logName="/home/runner/work/provisionerlogs/${{matrix.os}}-system-tests"
           sudo /usr/share/hirs/tpm_aca_provision --tcp --sim > $logName
           sudo chmod 777 $logName
           cat $logName
@@ -151,13 +151,38 @@ jobs:
           else
             result="Fail"
           fi
-          echo "::set-output name=result::$result"
+          sudo mv "$logName" "$logName-$result.log"
+      
+      - name: Configure ACA for full validation
+        run: |
+          echo "Set ACA Policy for full validation"
+          mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
+           enableUtcValidation=0, enableFirmwareValidation=1, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
+           
+          echo "Uploading trust certs to the ACA"
+          curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/ca.crt" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+          curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RIMCaCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+          curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RimSignCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
+          
+      - name: Set up test files for full validation
+        run: |
+          echo "Copying artifacts to EFI"
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/platformcerts/laptop.default.1.base.cer /home/runner/work/efi/EFI/tcg/cert/platform/
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/swidtags/laptop.default.1.swidtag /home/runner/work/efi/EFI/tcg/manifest/swidtag/
+          sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/rims/laptop.default.1.rimel /home/runner/work/efi/EFI/tcg/manifest/rim/
+          
+          echo "Configure TPM PCRs"
+          sudo sh /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/laptop_default_setpcrs.sh
+          
+      - name: Run Provisioner with full validation
+        id: ubuntu_result_full
+        run: | 
 
       - name: Upload Logs Ubuntu
         uses: actions/upload-artifact@v2
         if: contains(matrix.os, 'ubuntu') && always()
         with:
-          name: "${{matrix.os}}-system-tests-${{steps.ubuntu_result.outputs.result}}.log"
+          name: "${{matrix.os}}-system-tests"
           path: /home/runner/work/provisionerlogs/*.log
 
   Evaluator:

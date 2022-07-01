@@ -200,7 +200,7 @@ jobs:
           sudo ./tpm_aca_provision --tcp --sim > $logName
           cat $logName
 
-          if grep -rnw $logName -e "Certificate delivery succeeded"; 
+          if grep -rnw $logName -e "Provisioning successful"; 
           then 
             result="Pass"
           else
