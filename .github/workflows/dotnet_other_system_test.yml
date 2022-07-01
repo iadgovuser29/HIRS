@@ -71,7 +71,7 @@ jobs:
 
           # Setup tpm2 tools and simulator
           sudo apt install -y tpm2-tools
-          curl -L -o sim.tar.gz https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1332.tar.gz
+          curl -L -o sim.tar.gz https://downloads.sourceforge.net/project/ibmswtpm2/ibmtpm1661.tar.gz
           mkdir ibm-tpm
           tar -xvzf sim.tar.gz -C ./ibm-tpm
           cd ./ibm-tpm
@@ -115,6 +115,7 @@ jobs:
           
           echo "Installing provisioner"
           sudo apt-get install -yq /home/runner/work/HIRS/HIRS/HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/hirs.1.0.0.linux-x64.deb || true
+          echo "::warning ::deb install needs attention"
           
           echo "Copying appsettings"
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/appsettings.json /usr/share/hirs/
@@ -144,7 +145,7 @@ jobs:
           sudo chmod 777 $logName
           cat $logName
           
-          if grep -rnw $logName -e "ACA returned a positive response to the Certificate Request"; 
+          if grep -rnw $logName -e "Provisioning successful"; 
           then 
             result="Pass"
           else
