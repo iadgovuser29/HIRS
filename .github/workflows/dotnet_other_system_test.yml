@@ -132,6 +132,7 @@ jobs:
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/  
           echo "Creating log space"
           sudo mkdir -p /home/runner/work/provisionerlogs          
+          sudo chmod -R 777 /home/runner/work/provisionerlogs
         
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
