@@ -77,7 +77,7 @@ jobs:
 
           # Determine pass or fail
           $results = [string]$logs
-          $results = $results.Contains("Certificate delivery succeeded")
+          $results = $results.Contains("Provisioning successful")
           if($results) { $results = "Pass" } else { $results = "Fail"}
           echo "::set-output name=result::$results"
           $logName = "${{matrix.os}}-system-tests-" + $results + ".log"
