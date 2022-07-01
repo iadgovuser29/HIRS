@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
          - os: ubuntu-20.04
-         - os: ubuntu-18.04
+         #- os: ubuntu-18.04
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
@@ -132,7 +132,7 @@ jobs:
           sudo mkdir -p /home/runner/work/hw
           sudo mkdir -p /home/runner/work/tpm
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/
-          sudo apt-get install -yq bin/Release/net6.0/linux-x64/hirs*.deb       
+          sudo apt-get install -yq /home/runner/work/HIRS/HIRS/HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/hirs.1.0.0.linux-x64.deb       
         
       - name: Run Provisioner and Extract Ubuntu System Test Results
         id: ubuntu_result
