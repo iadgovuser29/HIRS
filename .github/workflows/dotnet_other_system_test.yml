@@ -114,7 +114,7 @@ jobs:
           dotnet deb -r linux-x64 -c Release
           
           echo "Installing provisioner"
-          sudo apt-get install -yq /home/runner/work/HIRS/HIRS/HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/hirs.1.0.0.linux-x64.deb  
+          sudo apt-get install -yq /home/runner/work/HIRS/HIRS/HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/hirs.1.0.0.linux-x64.deb || true
           
           echo "Copying appsettings"
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/appsettings.json /usr/share/hirs/
