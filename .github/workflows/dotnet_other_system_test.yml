@@ -20,6 +20,9 @@ jobs:
          - os: ubuntu-20.04
          #- os: ubuntu-18.04
     continue-on-error: true
+    outputs:
+      output1: ${{ steps.ubuntu_result.outputs.result }}
+      output2: ${{ steps.ubuntu_result_full.outputs.result }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -132,27 +135,15 @@ jobs:
           sudo mkdir -p /home/runner/work/tpm
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_hw.json /home/runner/work/hw/
           sudo cp /home/runner/work/HIRS/HIRS/.ci/setup/test_event_log /home/runner/work/tpm/  
-          echo "Creating log space"
-          sudo mkdir -p /home/runner/work/provisionerlogs          
-          sudo chmod -R 777 /home/runner/work/provisionerlogs
         
       - name: Run Provisioner with no ACA policy
         id: ubuntu_result
         run: |         
           echo "Running provisioner"
-          cd /home/runner/work/provisionerlogs
-          logName="/home/runner/work/provisionerlogs/${{matrix.os}}-system-tests"
-          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim > $logName
-          sudo chmod 777 $logName
-          cat $logName
-          
-          if grep -rnw $logName -e "Provisioning successful"; 
-          then 
-            result="Pass"
-          else
-            result="Fail"
-          fi
-          sudo mv "$logName" "$logName-$result.log"
+          sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
+          retVal=$?
+          echo "Provisioner exited with code $retVal"
+          echo "::set-output name=result::$retVal"
       
       - name: Configure ACA for full validation
         run: |
@@ -210,6 +201,13 @@ jobs:
           sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
           retVal=$?
           echo "Provisioner exited with code $retVal"
+          echo "::set-output name=result::$retVal"
+
+      - name: Upload ACA Logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: ACA-logs
+          path: /var/log/tomcat/
 
   Evaluator:
     name: Evaluate Tests
@@ -217,36 +215,13 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: false
     steps:
-
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-
-    - name: Make artifact directory
+    - name: Summarize
       run: |
-        mkdir artifacts
-
-    - uses: actions/download-artifact@v3
-      with:
-        path: artifacts
-
-    - name: Determine if a test failed
-      working-directory: artifacts
-      run: |
-        result="" 
-        suffix="-system-tests-Fail.log"
-        msg=" OS did not pass all the system tests."
-        
-        # Generate Annotations and Console Output
-        for file in *.log; do
-            if [[ "$file" == *"Fail"* ]]; then
-              title=${file%"$suffix"}
-              echo "::error title=$title System Tests Failed::The $title $msg"
-              result="Failed"
-            fi
-        done
-        
-        if [ -n "$result" ]
-        then
-            exit 1
+        result1=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output1}})
+        result2=$(echo ${{needs.dotnet-provisioner-aca-test-ubuntu.outputs.output2}})
+        if [ $result1 -ne 0 ]; then
+          exit 1
+        fi
+        if [ $result2 -ne 0 ]; then
+          exit 1
         fi
