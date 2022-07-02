@@ -205,6 +205,7 @@ jobs:
 
       - name: Upload ACA Logs
         uses: actions/upload-artifact@v2
+        if: always()
         with:
           name: ACA-logs
           path: /var/log/tomcat/
