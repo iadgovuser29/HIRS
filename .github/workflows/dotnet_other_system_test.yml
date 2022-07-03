@@ -208,7 +208,7 @@ jobs:
         if: always()
         with:
           name: ACA-logs
-          path: /var/log/tomcat/
+          path: /usr/share/tomcat/logs/
 
   Evaluator:
     name: Evaluate Tests
