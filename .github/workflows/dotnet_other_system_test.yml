@@ -150,7 +150,8 @@ jobs:
           echo "Set ACA Policy for full validation"
           mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
-          echo "Modifying system files for old device info collector
+          
+          echo "Modifying system files for old device info collector"
           echo -n "Dell Inc." > tmp_file
           sudo cp -f tmp_file /sys/class/dmi/id/sys_vendor
           echo -n "Latitude 5580" > tmp_file
