@@ -156,10 +156,10 @@ jobs:
           sudo chmod a+rw /sys/class/dmi/id/product_name
           sudo chmod a+rw /sys/class/dmi/id/product_version
           sudo chmod a+rw /sys/class/dmi/id/product_serial
-          echo -n "Dell Inc." | sudo tee /sys/class/dmi/id/sys_vendor
-          echo -n "Latitude 5580" | sudo tee /sys/class/dmi/id/product_name
-          echo -n "" | sudo tee /sys/class/dmi/id/product_version
-          echo -n "56LMWD2" | sudo tee /sys/class/dmi/id/product_serial
+          echo -n "Dell Inc." | sudo dd of=/sys/class/dmi/id/sys_vendor
+          echo -n "Latitude 5580" | sudo dd of=/sys/class/dmi/id/product_name
+          echo -n "" | sudo dd of=/sys/class/dmi/id/product_version
+          echo -n "56LMWD2" | sudo dd of=/sys/class/dmi/id/product_serial
            
           echo "Uploading trust certs to the ACA"
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/ca.crt" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
