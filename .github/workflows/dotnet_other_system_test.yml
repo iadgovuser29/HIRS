@@ -151,7 +151,11 @@ jobs:
           mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
           
-          echo "Modifying system files for old device info collector"
+          echo "Modifying system files for old device info collector  Trying sudo dd of= next"
+          sudo chmod a+rw /sys/class/dmi/id/sys_vendor
+          sudo chmod a+rw /sys/class/dmi/id/product_name
+          sudo chmod a+rw /sys/class/dmi/id/product_version
+          sudo chmod a+rw /sys/class/dmi/id/product_serial
           echo -n "Dell Inc." | sudo tee /sys/class/dmi/id/sys_vendor
           echo -n "Latitude 5580" | sudo tee /sys/class/dmi/id/product_name
           echo -n "" | sudo tee /sys/class/dmi/id/product_version
