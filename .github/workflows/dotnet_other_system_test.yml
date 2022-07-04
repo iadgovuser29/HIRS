@@ -198,7 +198,7 @@ jobs:
         id: ubuntu_result_full
         run: | 
           echo "Modifying system files for old device info collector  Trying sudo dd of= next"
-          mkdir -p chroot chroot/sys/class/dmi/id && cp -al /home /lib /lib64/ /usr/  || echo "Ignoring linking issues ..."
+          mkdir -p chroot chroot/sys/class/dmi/id && cp -al /bin /home /lib /lib64/ /usr/  || echo "Ignoring linking issues ..."
           echo "new-uuid" > chroot/sys/class/dmi/id/product_uuid
           echo -n "Dell Inc." > chroot/sys/class/dmi/id/sys_vendor
           echo -n "Latitude 5580" > chroot/sys/class/dmi/id/product_name
