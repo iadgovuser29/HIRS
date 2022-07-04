@@ -150,16 +150,6 @@ jobs:
           echo "Set ACA Policy for full validation"
           mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
-          
-          echo "Modifying system files for old device info collector  Trying sudo dd of= next"
-          sudo chmod a+rw /sys/class/dmi/id/sys_vendor
-          sudo chmod a+rw /sys/class/dmi/id/product_name
-          sudo chmod a+rw /sys/class/dmi/id/product_version
-          sudo chmod a+rw /sys/class/dmi/id/product_serial
-          echo -n "Dell Inc." | sudo dd of=/sys/class/dmi/id/sys_vendor
-          echo -n "Latitude 5580" | sudo dd of=/sys/class/dmi/id/product_name
-          echo -n "" | sudo dd of=/sys/class/dmi/id/product_version
-          echo -n "56LMWD2" | sudo dd of=/sys/class/dmi/id/product_serial
            
           echo "Uploading trust certs to the ACA"
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/ca.crt" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
@@ -207,6 +197,14 @@ jobs:
       - name: Run Provisioner with full validation
         id: ubuntu_result_full
         run: | 
+          echo "Modifying system files for old device info collector  Trying sudo dd of= next"
+          mkdir -p /chroot /chroot/sys/class/dmi/id && cp -al /home /lib /lib64/ /usr/  || echo "Ignoring linking issues ..."
+          echo "new-uuid" > /chroot/sys/class/dmi/id/product_uuid
+          echo -n "Dell Inc." > /chroot/sys/class/dmi/id/sys_vendor
+          echo -n "Latitude 5580" > /chroot/sys/class/dmi/id/product_name
+          echo -n "" > /chroot/sys/class/dmi/id/product_version
+          echo -n "56LMWD2" > /chroot/sys/class/dmi/id/product_serial
+          sudo chroot /chroot
           echo "Running provisioner"
           sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
           retVal=$?
