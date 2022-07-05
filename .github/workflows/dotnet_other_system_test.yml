@@ -86,7 +86,7 @@ jobs:
       - name: Setup tpm simulator for ubuntu 20.04
         if: contains(matrix.os, 'ubuntu-20.04')
         run: |
-          TPM2TOOLS_TCTI="mssim:host=localhost,port=2321"
+          export TPM2TOOLS_TCTI="mssim:host=localhost,port=2321"
           tpm2_startup -c &
           sleep 5
           ek_cert=/home/runner/work/HIRS/HIRS/.ci/setup/certs/ek_cert.der
@@ -145,10 +145,10 @@ jobs:
           echo "Provisioner exited with code $retVal"
           echo "::set-output name=result::$retVal"
       
-      - name: Configure ACA for full validation
+      - name: Configure ACA for EK validation
         run: |
-          echo "Set ACA Policy for full validation"
-          mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=1,
+          echo "Set ACA Policy for EK validation"
+          mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
            
           echo "Uploading trust certs to the ACA"
@@ -156,7 +156,7 @@ jobs:
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RIMCaCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
           curl -k -s -F "file=@/home/runner/work/HIRS/HIRS/.ci/setup/certs/RimSignCert.pem" https://127.0.0.1:8443/HIRS_AttestationCAPortal/portal/certificate-request/trust-chain/upload
           
-      - name: Set up test files for full validation
+      - name: Set up test files for EK validation
         run: |
           echo "Copying artifacts to EFI"
           sudo cp /home/runner/work/HIRS/HIRS/.ci/system-tests/profiles/laptop/default/platformcerts/laptop.default.1.base.cer /home/runner/work/efi/EFI/tcg/cert/platform/
@@ -194,7 +194,7 @@ jobs:
           tpm2_pcrextend 14:sha256=9fa163e06ff76a9f0d0262151328aa38f903495bc81ebcbd5bc40fcdbebb4a63 -Q
           tpm2_pcrextend 14:sha256=8d8a3aae50d5d25838c95c034aadce7b548c9a952eb7925e366eda537c59c3b0 -Q
           
-      - name: Run Provisioner with full validation
+      - name: Run Provisioner with EK validation
         id: ubuntu_result_full
         run: | 
           echo "Running provisioner"
