@@ -13,17 +13,25 @@ env:
 jobs:
   dotnet-provisioner-aca-test-ubuntu:
     name: Setup ACA and Test Provisioner Ubuntu
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-         - os: ubuntu-20.04
-         #- os: ubuntu-18.04
+    runs-on: ubuntu-latest
     continue-on-error: true
     outputs:
       output1: ${{ steps.ubuntu_result.outputs.result }}
       output2: ${{ steps.ubuntu_result_full.outputs.result }}
     steps:
+      - name: System Test Setup
+        run: |
+          echo "HIRS_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+          echo "HIRS_REPO=${{ github.server_url }}/${{ github.repository }}.git" >> $GITHUB_ENV
+          # echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+          # comment out the line above and uncomment the line below to run in a forked repo.
+          echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin;    
+      - name: Run a container
+        run: |
+          # Expand linux dmi files to mount to the provisioner container to simulate device component
+          mkdir -p /opt/hirs/dmi/laptop/
+          unzip -q .ci/system-tests/profiles/laptop/laptop_dmi.zip -d /opt/hirs/dmi/laptop/
+          docker-compose -f .ci/docker/docker-compose-ubuntu20-2.yml up -d
       - uses: actions/checkout@v2
         with:
           submodules: recursive
@@ -197,14 +205,6 @@ jobs:
       - name: Run Provisioner with full validation
         id: ubuntu_result_full
         run: | 
-          echo "Modifying system files for old device info collector  Trying sudo dd of= next"
-          mkdir -p chroot chroot/sys/class/dmi/id && cp -al /bin /home /lib /lib64/ /usr/  || echo "Ignoring linking issues ..."
-          echo "new-uuid" > chroot/sys/class/dmi/id/product_uuid
-          echo -n "Dell Inc." > chroot/sys/class/dmi/id/sys_vendor
-          echo -n "Latitude 5580" > chroot/sys/class/dmi/id/product_name
-          echo -n "" > chroot/sys/class/dmi/id/product_version
-          echo -n "56LMWD2" > chroot/sys/class/dmi/id/product_serial
-          sudo chroot ./chroot
           echo "Running provisioner"
           sudo /usr/share/hirs/tpm_aca_provision --tcp --sim
           retVal=$?
