@@ -19,19 +19,6 @@ jobs:
       output1: ${{ steps.ubuntu_result.outputs.result }}
       output2: ${{ steps.ubuntu_result_full.outputs.result }}
     steps:
-      - name: System Test Setup
-        run: |
-          echo "HIRS_BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
-          echo "HIRS_REPO=${{ github.server_url }}/${{ github.repository }}.git" >> $GITHUB_ENV
-          # echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          # comment out the line above and uncomment the line below to run in a forked repo.
-          echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin;    
-      - name: Run a container
-        run: |
-          # Expand linux dmi files to mount to the provisioner container to simulate device component
-          mkdir -p /opt/hirs/dmi/laptop/
-          unzip -q .ci/system-tests/profiles/laptop/laptop_dmi.zip -d /opt/hirs/dmi/laptop/
-          docker-compose -f .ci/docker/docker-compose-ubuntu20-2.yml up -d
       - uses: actions/checkout@v2
         with:
           submodules: recursive
@@ -156,7 +143,7 @@ jobs:
       - name: Configure ACA for full validation
         run: |
           echo "Set ACA Policy for full validation"
-          mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=1, enablePcValidation=1,
+          mysql -u root -D hirs_db -e "Update SupplyChainPolicy set enableEcValidation=1, enablePcAttributeValidation=0, enablePcValidation=1,
            enableUtcValidation=0, enableFirmwareValidation=0, enableExpiredCertificateValidation=0, enableIgnoreGpt=0, enableIgnoreIma=1, enableIgnoretBoot=0;"
            
           echo "Uploading trust certs to the ACA"
