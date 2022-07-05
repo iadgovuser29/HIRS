@@ -15,11 +15,23 @@ using Serilog;
 namespace hirs {
     public class ClassicDeviceInfoCollector : IHirsDeviceInfoCollector {
         public static readonly string NOT_SPECIFIED = "Not Specified";
+        public static readonly string LINUX_DEFAULT_BIOS_VENDOR_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_BIOS_VERSION_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_BIOS_DATE_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_SYS_VENDOR_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_PRODUCT_NAME_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_PRODUCT_VERSION_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_PRODUCT_SERIAL_PATH = "/sys/class/dmi/id";
+        private readonly Settings? settings;
 
         public ClassicDeviceInfoCollector() {
+            settings = null;
+        }
+        public ClassicDeviceInfoCollector(Settings settings) {
+            this.settings = settings;
         }
 
-        public string FileToString(string path, string def) {
+        public static string FileToString(string path, string def) {
             string result;
             try {
                 result = File.ReadAllText(path).Trim();
@@ -60,9 +72,26 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                fw.BiosVendor = FileToString("/sys/class/dmi/id/bios_vendor", NOT_SPECIFIED);
-                fw.BiosVersion = FileToString("/sys/class/dmi/id/bios_version", NOT_SPECIFIED);
-                fw.BiosReleaseDate = FileToString("/sys/class/dmi/id/bios_date", NOT_SPECIFIED);
+                if (settings != null) {
+                    if (!string.IsNullOrEmpty(settings.linux_bios_vendor)) {
+                        fw.BiosVendor = settings.linux_bios_vendor.Trim();
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_bios_version)) {
+                        fw.BiosVersion = settings.linux_bios_version.Trim();
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_bios_date)) {
+                        fw.BiosReleaseDate = settings.linux_bios_date.Trim();
+                    }
+                }
+                if (string.IsNullOrEmpty(fw.BiosVendor)) {
+                    fw.BiosVendor = FileToString(LINUX_DEFAULT_BIOS_VENDOR_PATH, NOT_SPECIFIED);
+                }
+                if (string.IsNullOrEmpty(fw.BiosVersion)) {
+                    fw.BiosVersion = FileToString(LINUX_DEFAULT_BIOS_VERSION_PATH, NOT_SPECIFIED);
+                }
+                if (string.IsNullOrEmpty(fw.BiosReleaseDate)) {
+                    fw.BiosReleaseDate = FileToString(LINUX_DEFAULT_BIOS_DATE_PATH, NOT_SPECIFIED);
+                }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -75,8 +104,6 @@ namespace hirs {
 
             return fw;
         }
-
-        
 
         public HardwareInfo CollectHardwareInfo() {
             HardwareInfo hw = new();
@@ -100,10 +127,32 @@ namespace hirs {
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-                hw.Manufacturer = FileToString("/sys/class/dmi/id/sys_vendor", NOT_SPECIFIED);
-                hw.ProductName = FileToString("/sys/class/dmi/id/product_name", NOT_SPECIFIED);
-                hw.ProductVersion = FileToString("/sys/class/dmi/id/product_version", NOT_SPECIFIED);
-                hw.SystemSerialNumber = FileToString("/sys/class/dmi/id/product_serial", NOT_SPECIFIED);
+                if (settings != null) {
+                    if (!string.IsNullOrEmpty(settings.linux_sys_vendor)) {
+                        hw.Manufacturer = settings.linux_sys_vendor.Trim();
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_name)) {
+                        hw.ProductName = settings.linux_product_name.Trim();
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_version)) {
+                        hw.ProductVersion = settings.linux_product_version.Trim();
+                    }
+                    if (!string.IsNullOrEmpty(settings.linux_product_serial)) {
+                        hw.SystemSerialNumber = settings.linux_product_serial.Trim();
+                    }
+                }
+                if (string.IsNullOrEmpty(hw.Manufacturer)) {
+                    hw.Manufacturer = FileToString(LINUX_DEFAULT_SYS_VENDOR_PATH, NOT_SPECIFIED);
+                }
+                if (string.IsNullOrEmpty(hw.ProductName)) {
+                    hw.ProductName = FileToString(LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
+                }
+                if (string.IsNullOrEmpty(hw.ProductVersion)) {
+                    hw.ProductVersion = FileToString(LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
+                }
+                if (string.IsNullOrEmpty(hw.SystemSerialNumber)) {
+                    hw.SystemSerialNumber = FileToString(LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
+                }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -120,7 +169,6 @@ namespace hirs {
 
         public NetworkInfo CollectNetworkInfo(string acaAddress) {
             NetworkInfo nw = new();
-            nw.Hostname = Dns.GetHostName();
 
             NetworkInterface iface = NetworkInterface
                 .GetAllNetworkInterfaces()
@@ -134,11 +182,10 @@ namespace hirs {
             if (string.IsNullOrWhiteSpace(acaAddress)) {
                 Uri uri = new(acaAddress);
                 try {
-                    using (Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, 0)) {
-                        socket.Connect(uri.Host, uri.Port);
-                        IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                        nw.IpAddress = endPoint.Address.ToString();
-                    }
+                    Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+                    socket.Connect(uri.Host, uri.Port);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    nw.IpAddress = endPoint.Address.ToString();
                 } catch {
                     Log.Debug("Not connected to the internet. Trying another search.");
                 }
@@ -152,6 +199,12 @@ namespace hirs {
                     }
                 }
             }
+            if (nw.HasIpAddress) {
+                nw.Hostname = Dns.GetHostEntry(nw.IpAddress).HostName;
+            } else {
+                nw.Hostname = Dns.GetHostName();
+            }
+            
 
             Log.Debug("Network Info IP: " + nw.IpAddress);
             Log.Debug("Network Info MAC: " + nw.MacAddress);
