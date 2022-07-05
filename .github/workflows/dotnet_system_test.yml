@@ -11,6 +11,86 @@ env:
   DOTNET_VERSION: '6.0'
 
 jobs: 
+  dotnet-provisioner-aca-test-windows:
+    name: Setup ACA and Test Provisioner Windows
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+         - os: windows-2022
+         # - os: windows-2019 Cannot Target windows-2019 because the .NET 6 SDK won't receive security patches for this image
+    continue-on-error: true
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: "Sets up WSL"
+        if: contains(matrix.os, 'windows') && always()
+        uses: Vampire/setup-wsl@v1
+        with:
+            distribution: Ubuntu-18.04
+
+      # TODO: Remove once ACA/Tomcat is updated
+      - name: " Strip SSL Parameters From JDBC String"
+        run: |
+          # Strip ssl from connection  string
+          $file1 = 'HIRS_Utils/src/main/resources/persistence.properties'
+          $file2 = 'package/deb/hirs-attestationca_2.1.1_amd64/opt/hirs/default-properties/attestationca/persistence.properties'
+          $regex = 'persistence.db.url[^"]*'
+          $replacement = "persistence.db.url                  = jdbc:mariadb://localhost/hirs_db?autoReconnect=true"
+          (Get-Content $file1) -replace $regex, $replacement | Set-Content $file1
+          (Get-Content $file2) -replace $regex, $replacement | Set-Content $file2
+
+      - name: " Setup ACA/TPM and Run Provisioner"
+        id: window_result
+        run: |
+          # Start simulator outside of shell
+          wsl sudo apt-get -y install zip unzip
+          wsl curl -L -o sim.zip https://download.microsoft.com/download/2/8/C/28C3917F-EC5B-464E-B229-1DD1FA299316/TSS.MSR%20v2.0%20TPM2%20Simulator.zip
+          wsl unzip ./sim
+          wsl sudo chmod +x ./Simulator.exe
+          wsl ./Simulator.exe &
+
+          Start-Process -NoNewWindow wsl "sh /mnt/d/a/HIRS/HIRS/package/deb/wsl-aca-setup.sh"
+
+          # Wait for ACA Setup
+          wsl sh package/deb/wait-aca.sh
+
+          # Provisioner exits on error because directory does not exist on windows-2022 runner
+          mkdir C:\Windows\Logs\MeasuredBoot  
+
+          # Publish provisioner
+          echo "Building provisioner"
+          cd HIRS_Provisioner.NET/hirs
+          dotnet restore
+          dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+          
+          # Run provisioner
+          echo "Running Provisioner"
+          cd bin/Release/net6.0/win-x64/publish
+          $logs = ./tpm_aca_provision.exe --tcp --sim
+
+          # Determine pass or fail
+          $results = [string]$logs
+          $results = $results.Contains("Provisioning successful")
+          if($results) { $results = "Pass" } else { $results = "Fail"}
+          echo "::set-output name=result::$results"
+          $logName = "${{matrix.os}}-system-tests-" + $results + ".log"
+          New-Item $logName
+          Set-Content $logName $logs
+          Get-Content $logName
+
+      - name: Upload Logs Windows
+        uses: actions/upload-artifact@v2
+        with:
+          name: "${{matrix.os}}-system-tests-${{steps.window_result.outputs.result}}.log"
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/publish/*.log
+
   dotnet-provisioner-aca-test-ubuntu:
     name: Setup ACA and Test Provisioner Ubuntu
     runs-on: ${{ matrix.os }}
