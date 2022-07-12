@@ -1,0 +1,29 @@
+name: .NET Provisioner New System Test
+on: push
+  # TODO: Tests workflow dependency to run system tests after unit tests on main repo
+  # workflow_run:
+  #   workflows: ["Dotnet Provisioner Unit Tests"]
+  #   branches: [dotnet-provisioner-workflow-dev]
+  #   types:
+  #     - completed
+
+env: 
+  DOTNET_VERSION: '6.0'
+
+jobs: 
+  dotnet-provisioner-aca-test-ubuntu:
+    name: Setup ACA and Test Provisioner Ubuntu
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+         - os: ubuntu-20.04
+         #- os: ubuntu-18.04
+    continue-on-error: false
+    outputs:
+      output1: ${{ steps.ubuntu_result.outputs.result }}
+    steps:
+      - name: "Run tests"
+        run: |
+          sh ./.ci/compose/runner.sh
+          

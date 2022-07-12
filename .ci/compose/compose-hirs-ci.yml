@@ -1,0 +1,73 @@
+version: "3.1"
+
+services:
+    aca-centos7:
+      image: ghcr.io/nsacyber/hirs/aca-ci:latest
+      #entrypoint: ["/bin/bash","${HIRS_CI_REPOS_HIRS}/.ci/compose/setup-aca.sh"]
+      #command: ["tail", "-f", "/dev/null"]
+      command: 
+        - /bin/bash
+        - -c
+        - |
+          cd ${HIRS_CI_REPOS_HIRS}/.ci/compose/
+          sh ./setup-aca.sh
+      volumes:
+        - ../../:${HIRS_CI_REPOS_HIRS}
+        - ${HIRS_CI_BUILDS_DIR}:${HIRS_CI_BUILDS_DIR}
+        - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+      ports:
+        - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_PORT}"
+      env_file:
+        - .env
+    dotnet-ubuntu20-builder:
+      image: ghcr.io/nsacyber/hirs/hirs-ubuntu20-ci:latest
+      command: 
+        - /bin/bash
+        - -c
+        - |
+          cd ${HIRS_CI_REPOS_HIRS}/.ci/compose/
+          sh ./setup-dotnet-deb.sh  &> ${HIRS_CI_LOGS_DIR}/dotnet-ubuntu20-builder_build.log
+          sh ./setup-tpm.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-ubuntu20-builder_tpm.log
+          sh ./setup-ek-basic.sh
+          sh ./install-dotnet-provisioner-apt.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-ubuntu20-builder_install.log
+          tail -f /dev/null
+      volumes:
+         - ../../:${HIRS_CI_REPOS_HIRS}
+         - ${HIRS_CI_BUILDS_DIR}:${HIRS_CI_BUILDS_DIR}
+         - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+      env_file:
+         - .env
+    dotnet-ubuntu20-runonly:
+      image: ghcr.io/nsacyber/hirs/hirs-ubuntu20-ci:latest
+      command: 
+        - /bin/bash
+        - -c
+        - |
+          cd ${HIRS_CI_REPOS_HIRS}/.ci/compose/
+          sh ./setup-tpm.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-ubuntu20-runonly_tpm.log
+          sh ./setup-ek-basic.sh
+          sh ./install-dotnet-provisioner-apt.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-ubuntu20-runonly_install.log
+          tail -f /dev/null
+      volumes:
+        - ../../:${HIRS_CI_REPOS_HIRS}
+        - ${HIRS_CI_BUILDS_DIR}:${HIRS_CI_BUILDS_DIR}
+        - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+      env_file:
+        - .env
+    dotnet-rocky85-runonly:
+      image: ghcr.io/nsacyber/hirs/hirs-rocky85-ci:latest
+      command: 
+        - /bin/bash
+        - -c
+        - |
+          cd ${HIRS_CI_REPOS_HIRS}/.ci/compose/
+          sh ./setup-tpm.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-rocky85-runonly_tpm.log
+          sh ./setup-ek-basic.sh
+          sh ./install-dotnet-provisioner-yum.sh &> ${HIRS_CI_LOGS_DIR}/dotnet-rocky85-runonly_install.log
+          tail -f /dev/null
+      volumes:
+        - ../../:${HIRS_CI_REPOS_HIRS}
+        - ${HIRS_CI_BUILDS_DIR}:${HIRS_CI_BUILDS_DIR}
+        - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+      env_file:
+        - .env
