@@ -3,6 +3,7 @@
 sudo mkdir -p /mnt/hirs-ci/{builds,logs,repos}
 sudo chmod -R 777 /mnt/hirs-ci
 
+cd ..
 mv HIRS /mnt/hirs-ci/repos
 
 cd /mnt/hirs-ci/repos/HIRS/.ci/compose
