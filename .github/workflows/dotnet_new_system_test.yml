@@ -20,11 +20,14 @@ jobs:
       - name: System Test Setup
         run: |
           echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin;
+          sudo mkdir -p /mnt/hirs-ci/{builds,logs,repos}
+          sudo chmod -R 777 /mnt/hirs-ci
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+          path: /mnt/hirs-ci/repos/
       - name: "Run tests"
         run: |
-          pwd
+          cd /mnt/hirs-ci/repos/HIRS/.ci/compose
           sh ./.ci/compose/runner.sh
           

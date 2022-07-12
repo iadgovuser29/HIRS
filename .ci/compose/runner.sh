@@ -1,12 +1,12 @@
 #!/bin/bash
 
-sudo mkdir -p /mnt/hirs-ci/{builds,logs,repos}
-sudo chmod -R 777 /mnt/hirs-ci
+#sudo mkdir -p /mnt/hirs-ci/{builds,logs,repos}
+#sudo chmod -R 777 /mnt/hirs-ci
 
-cd ..
-mv HIRS /mnt/hirs-ci/repos
+#cd ..
+#mv HIRS /mnt/hirs-ci/repos
 
-cd /mnt/hirs-ci/repos/HIRS/.ci/compose
+#cd /mnt/hirs-ci/repos/HIRS/.ci/compose
 docker compose -f ./compose-hirs-ci.yml up -d
 echo "Letting docker compose finish..."
 sleep 30
