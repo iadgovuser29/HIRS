@@ -28,6 +28,7 @@ jobs:
       - name: "Run tests"
         run: |
           pwd
+          ls
           cd .ci/compose
-          sh ./.ci/compose/runner.sh
+          sh ./runner.sh
           
