@@ -1,11 +1,5 @@
 name: .NET Provisioner New System Test
 on: push
-  # TODO: Tests workflow dependency to run system tests after unit tests on main repo
-  # workflow_run:
-  #   workflows: ["Dotnet Provisioner Unit Tests"]
-  #   branches: [dotnet-provisioner-workflow-dev]
-  #   types:
-  #     - completed
 
 env: 
   DOTNET_VERSION: '6.0'
@@ -23,7 +17,14 @@ jobs:
     outputs:
       output1: ${{ steps.ubuntu_result.outputs.result }}
     steps:
+      - name: System Test Setup
+        run: |
+          echo "${{ secrets.PKG_PWD }}" | docker login ghcr.io -u $ --password-stdin;
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: "Run tests"
         run: |
+          pwd
           sh ./.ci/compose/runner.sh
           
