@@ -39,7 +39,7 @@ jobs:
           ls
           cd .ci/compose
           sh ./runner.sh
-      - name: Setup tmate session
+      - name: Setup tmate session on error
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
         with:
