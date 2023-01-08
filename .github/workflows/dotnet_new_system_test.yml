@@ -17,11 +17,6 @@ jobs:
     outputs:
       output1: ${{ steps.ubuntu_result.outputs.result }}
     steps:
-      - name: Setup tmate session
-        if: success() || failure()
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
       - name: System Test Setup
         run: |
           # Change dash to bash
@@ -44,4 +39,8 @@ jobs:
           ls
           cd .ci/compose
           sh ./runner.sh
-          
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true    
