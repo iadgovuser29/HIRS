@@ -34,15 +34,15 @@ jobs:
           sudo mkdir -p /mnt/hirs-ci/{builds,logs}
           sudo chmod -R 777 /mnt/hirs-ci
       - name: Test flag
-        if: env.HIRS_CI_SKIP_DOTNET != 'true'
+        if: ${{ env.HIRS_CI_SKIP_DOTNET }}
         run: |
-          echo "HIRS_CI_SKIP_DOTNET was false"
-          echo "$env.HIRS_CI_SKIP_DOTNET"
+          echo "HIRS_CI_SKIP_DOTNET was "
+          echo "${{ env.HIRS_CI_SKIP_DOTNET }}"
       - name: Test flag 2
-        if: env.HIRS_CI_USE_PREBUILT_ACA == 'true'
+        if: ${{ env.HIRS_CI_USE_PREBUILT_ACA }}
         run: |
-          echo "HIRS_CI_USE_PREBUILT_ACA was true"
-          echo "$HIRS_CI_USE_PREBUILT_ACA"   
+          echo "HIRS_CI_USE_PREBUILT_ACA was"
+          echo ${{ HIRS_CI_USE_PREBUILT_ACA }}  
       - uses: actions/checkout@v2
         with:
           submodules: recursive
