@@ -6,6 +6,9 @@ env:
 
 jobs: 
   dotnet-provisioner-aca-test-ubuntu:
+    env:
+      HIRS_CI_USE_PREBUILT_ACA: "contains(github.event.commits[0].message, 'hcupa') || contains(github.event.commits[0].message, '--hirs-ci-use-prebuilt-aca')"
+      HIRS_CI_SKIP_DOTNET: "contains(github.event.commits[0].message, 'hcsd') || contains(github.event.commits[0].message, '--hirs-ci-skip-dotnet')"
     name: Setup ACA and Test Provisioner Ubuntu
     runs-on: ${{ matrix.os }}
     strategy:
@@ -30,6 +33,16 @@ jobs:
           # Setup env
           sudo mkdir -p /mnt/hirs-ci/{builds,logs}
           sudo chmod -R 777 /mnt/hirs-ci
+      - name: Test flag
+        if: env.HIRS_CI_SKIP_DOTNET != 'true'
+        run: |
+          echo "HIRS_CI_SKIP_DOTNET was false"
+          echo env.HIRS_CI_SKIP_DOTNET
+      - name: Test flag 2
+        if: env.HIRS_CI_USE_PREBUILT_ACA == 'true'
+        run: |
+          echo "HIRS_CI_USE_PREBUILT_ACA was true"
+          echo "$HIRS_CI_USE_PREBUILT_ACA"   
       - uses: actions/checkout@v2
         with:
           submodules: recursive
@@ -39,8 +52,12 @@ jobs:
           ls
           cd .ci/compose
           sh ./runner.sh
+        # If the workflow fails at any point,
+        # an ssh session will be available to 
+        # connect to the runner for further debugging.
       - name: Setup tmate session on error
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 2 # The ssh session will be available for 2 minutes.
         with:
-          limit-access-to-actor: true    
+          limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
