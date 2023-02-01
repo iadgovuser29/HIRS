@@ -7,8 +7,8 @@ env:
 jobs: 
   dotnet-provisioner-aca-test-ubuntu:
     env:
-      HIRS_CI_USE_PREBUILT_ACA: "contains(github.event.commits[0].message, 'hcupa') || contains(github.event.commits[0].message, '--hirs-ci-use-prebuilt-aca')"
-      HIRS_CI_SKIP_DOTNET: "contains(github.event.commits[0].message, 'hcsd') || contains(github.event.commits[0].message, '--hirs-ci-skip-dotnet')"
+      HIRS_CI_USE_PREBUILT_ACA: "${{ contains(github.event.commits[0].message, 'hcupa') || contains(github.event.commits[0].message, '--hirs-ci-use-prebuilt-aca') }}"
+      HIRS_CI_SKIP_DOTNET: "${{ contains(github.event.commits[0].message, 'hcsd') || contains(github.event.commits[0].message, '--hirs-ci-skip-dotnet') }}"
     name: Setup ACA and Test Provisioner Ubuntu
     runs-on: ${{ matrix.os }}
     strategy:
@@ -42,7 +42,7 @@ jobs:
         if: ${{ env.HIRS_CI_USE_PREBUILT_ACA }}
         run: |
           echo "HIRS_CI_USE_PREBUILT_ACA was"
-          echo ${{ env.HIRS_CI_USE_PREBUILT_ACA }}  
+          echo "${{ env.HIRS_CI_USE_PREBUILT_ACA }}"
       - uses: actions/checkout@v2
         with:
           submodules: recursive
