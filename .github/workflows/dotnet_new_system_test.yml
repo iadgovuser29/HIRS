@@ -42,7 +42,7 @@ jobs:
         if: ${{ env.HIRS_CI_USE_PREBUILT_ACA }}
         run: |
           echo "HIRS_CI_USE_PREBUILT_ACA was"
-          echo ${{ HIRS_CI_USE_PREBUILT_ACA }}  
+          echo ${{ env.HIRS_CI_USE_PREBUILT_ACA }}  
       - uses: actions/checkout@v2
         with:
           submodules: recursive
