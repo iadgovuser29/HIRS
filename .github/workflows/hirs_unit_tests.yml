@@ -2,10 +2,10 @@
 
 name: HIRS Build and Unit Test
 
-on:
-  push:
+#commented out just to not waste resources while testing updates #on:
+#  push:
    # allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+#  workflow_dispatch:
 
 jobs:
   # run the unit tests and package HIRS ACA, provisoner, and tools

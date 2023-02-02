@@ -1,5 +1,5 @@
 name: Dotnet Provisioner Unit Tests
-on: push
+  #commented out just to not waste resources while testing updates #on: push 
 env: 
   DOTNET_VERSION: '6.0'
 jobs:

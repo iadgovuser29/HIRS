@@ -1,5 +1,5 @@
 name: .NET Provisioner ACA System Test
-on: push
+#commented out just to not waste resources while testing updates #on: push
   # TODO: Tests workflow dependency to run system tests after unit tests on main repo
   # workflow_run:
   #   workflows: ["Dotnet Provisioner Unit Tests"]
