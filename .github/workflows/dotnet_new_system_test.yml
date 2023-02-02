@@ -49,7 +49,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '8'i
+          java-version: '8'
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - name: Validate Gradle wrapper
