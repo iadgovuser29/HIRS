@@ -1,7 +1,7 @@
 name: HIRS packages for centos
-on:
-  push:
-  workflow_dispatch:
+#commented out just to not waste resources while testing updates #on:
+#  push:
+#  workflow_dispatch:
   
 jobs:
   # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool

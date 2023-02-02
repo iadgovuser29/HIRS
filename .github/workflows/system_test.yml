@@ -1,9 +1,9 @@
 # Sets up and runs HIRS System tests
 
 name: HIRS System Tests
-on: 
-  push:
-  workflow_dispatch:
+#commented out just to not waste resources while testing updates #on: 
+#  push:
+#  workflow_dispatch:
 env:
   TEST_STATUS: 0
 jobs:
