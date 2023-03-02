@@ -1,0 +1,75 @@
+name: Windows-based Building, Unit and System Tests
+
+env:
+  DOTNET_VERSION: '6.0'
+
+jobs:
+  windows-builder:
+    name: 
+    runs-on: ${{ matrix.os }} # currently only planning to target one OS
+    strategy:                 # leaving this in case support for newer
+      matrix:                 # options is as easy as adding them here
+        include:              # (not likely)
+         - os: windows-2022
+    continue-on-error: true
+    steps:
+      - name: Set git autocrlf to false # to avoid line ending issues
+        run: |
+          git config --global core.autocrlf false
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Run Unit Tests
+        cd HIRS_Provisioner.NET
+        dotnet restore
+        dotnet test
+      - name: Build and publish the .NET Provisioner for Windows
+        run: |
+          cd hirs
+          dotnet publish -r win-x64 -c Release --self-contained
+      - name: Build and publish the .NET Provisioner for Linux
+        run: | 
+          dotnet publish -r linux-x64 -c Release --self-contained
+      - name: Build the .NET Provisioner MSI Artifact
+        id: dotnet_provisioner_build_msi
+        run: |
+          dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+          ls -al bin/Release/net6.0/win-x64/*.msi
+          certuil -hashFile bin/Release/net6.0/win-x64/*.msi SHA256
+          ls -al bin/Release/net6.0/win-x64/publish
+      - name: Build the .NET Provisioner RPM Artifact
+        id: dotnet_provisioner_build_rpm
+        run: |
+          dotnet tool install --global dotnet-rpm
+          dotnet rpm -r linux-x64 -c Release
+          ls -al bin/Release/net6.0/linux-x64/*.rpm
+          certutil -hashFile bin/Release/net6.0/linux-x64/*.rpm SHA256
+          ls -al bin/Release/net6.0/linux-x64/publish
+      - name: Build the .NET Provisioner DEB Artifact
+        id: dotnet_provisioner_build_deb
+        run: |
+          dotnet tool install --global dotnet-deb
+          dotnet deb -r linux-x64 -c Release
+          ls -al bin/Release/net6.0/linux-x64/*.deb
+          certutil -hashFile bin/Release/net6.0/linux-64/*.deb SHA256
+          ls -al bin/Release/net6.0/linux-x64/publish
+      - name: Upload MSI Artifact
+        uses: actions/upload-artifact@v3
+        if: steps.dotnet_provisioner_build_msi.outcome == 'success'
+        with:
+          name: hirs.msi
+          path: bin/Release/net6.0/win-x64/hirs.msi
+      - name: Upload RPM Artifact
+        uses: actions/upload-artifact@v3
+        if: steps.dotnet_provisioner_build_rpm.outcome == 'success'
+        with:
+          name: hirs.rpm
+          path: bin/Release/net6.0/linux-x64/*.rpm
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v3
+        if: steps.dotnet_provisioner_build_deb.outcome == 'success'
+        with:
+          name: hirs.deb
+          path: bin/Release/net6.0/linux-x64/*.deb
+
