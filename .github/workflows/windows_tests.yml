@@ -1,4 +1,5 @@
 name: Windows-based Building, Unit and System Tests
+on: push
 
 env:
   DOTNET_VERSION: '6.0'
