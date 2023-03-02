@@ -28,10 +28,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Dotnet packaging tools require .NET 6
-        run: |
-          cd HIRS_Provisioner.NET/hirs
-          dotnet new globaljson --sdk-version 6 --force
       - name: Run Unit Tests
         run: |
           cd HIRS_Provisioner.NET
@@ -57,6 +53,7 @@ jobs:
         id: dotnet_provisioner_build_rpm
         run: |
           cd HIRS_Provisioner.NET/hirs
+          dotnet new globaljson --sdk-version 6 --force
           dotnet rpm -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm")
@@ -65,6 +62,7 @@ jobs:
         id: dotnet_provisioner_build_deb
         run: |
           cd HIRS_Provisioner.NET/hirs
+          dotnet new globaljson --sdk-version 6 --force
           dotnet deb -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/*.deb
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-64/*.deb")
