@@ -19,6 +19,8 @@ jobs:
           git config --global core.autocrlf false
       - name: Install dotnet packaging tools
         run: |
+          echo "dotnet packaging does not currently work with the .NET 7 SDK. Forcing .NET 6"
+          dotnet new globaljson --sdk-version 6.0.406 --force
           dotnet tool install --global dotnet-rpm
           dotnet tool install --global dotnet-deb
       - name: Add dotnet tools directory to PATH
@@ -31,6 +33,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd HIRS_Provisioner.NET
+          dotnet --version
           dotnet restore
           dotnet test
       - name: Build and publish the .NET Provisioner for Windows
@@ -65,7 +68,7 @@ jobs:
           dotnet new globaljson --sdk-version 6.0.406 --force
           dotnet deb -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/*.deb
-          Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-64/*.deb")
+          Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.deb")
           ls bin/Release/net6.0/linux-x64/publish
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v3
