@@ -20,8 +20,8 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: |  # Note multiple paths in this script
-            6                # assume .NET 6 
+          dotnet-version: |  # Note multiple paths in this script assume .NET 6
+            6
       - name: Install dotnet packaging tools
         run: |
           dotnet tool install --global dotnet-rpm
