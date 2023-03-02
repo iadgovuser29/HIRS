@@ -19,6 +19,7 @@ jobs:
           git config --global core.autocrlf false
       - name: Force use of .NET 6 # several statements below assume .NET 6
         run: |
+          cd HIRS_Provisioner.NET/hirs
           dotnet new globaljson --sdk-version 6 --force
       - name: Install dotnet packaging tools
         run: |
