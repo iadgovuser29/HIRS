@@ -28,14 +28,16 @@ jobs:
           dotnet test
       - name: Build and publish the .NET Provisioner for Windows
         run: |
-          cd hirs
+          cd HIRS_Provisioner.NET/hirs
           dotnet publish -r win-x64 -c Release --self-contained
       - name: Build and publish the .NET Provisioner for Linux
         run: | 
+          cd HIRS_Provisioner.NET/hirs
           dotnet publish -r linux-x64 -c Release --self-contained
       - name: Build the .NET Provisioner MSI Artifact
         id: dotnet_provisioner_build_msi
         run: |
+          cd HIRS_Provisioner.NET/hirs
           dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
           ls -al bin/Release/net6.0/win-x64/*.msi
           certuil -hashFile bin/Release/net6.0/win-x64/*.msi SHA256
@@ -43,6 +45,7 @@ jobs:
       - name: Build the .NET Provisioner RPM Artifact
         id: dotnet_provisioner_build_rpm
         run: |
+          cd HIRS_Provisioner.NET/hirs
           dotnet tool install --global dotnet-rpm
           dotnet rpm -r linux-x64 -c Release
           ls -al bin/Release/net6.0/linux-x64/*.rpm
@@ -51,6 +54,7 @@ jobs:
       - name: Build the .NET Provisioner DEB Artifact
         id: dotnet_provisioner_build_deb
         run: |
+          cd HIRS_Provisioner.NET/hirs
           dotnet tool install --global dotnet-deb
           dotnet deb -r linux-x64 -c Release
           ls -al bin/Release/net6.0/linux-x64/*.deb
@@ -61,17 +65,17 @@ jobs:
         if: steps.dotnet_provisioner_build_msi.outcome == 'success'
         with:
           name: hirs.msi
-          path: bin/Release/net6.0/win-x64/hirs.msi
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/hirs.msi
       - name: Upload RPM Artifact
         uses: actions/upload-artifact@v3
         if: steps.dotnet_provisioner_build_rpm.outcome == 'success'
         with:
           name: hirs.rpm
-          path: bin/Release/net6.0/linux-x64/*.rpm
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/*.rpm
       - name: Upload DEB Artifact
         uses: actions/upload-artifact@v3
         if: steps.dotnet_provisioner_build_deb.outcome == 'success'
         with:
           name: hirs.deb
-          path: bin/Release/net6.0/linux-x64/*.deb
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/*.deb
 
