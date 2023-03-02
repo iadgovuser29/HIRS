@@ -17,6 +17,11 @@ jobs:
       - name: Set git autocrlf to false # to avoid line ending issues
         run: |
           git config --global core.autocrlf false
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |  # Note multiple paths in this script
+            6                # assume .NET 6 
       - name: Install dotnet packaging tools
         run: |
           dotnet tool install --global dotnet-rpm
