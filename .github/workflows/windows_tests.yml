@@ -40,7 +40,7 @@ jobs:
           cd HIRS_Provisioner.NET/hirs
           dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
           ls bin/Release/net6.0/win-x64/*.msi
-          certuil -hashFile bin/Release/net6.0/win-x64/*.msi SHA256
+          certutil -hashFile bin/Release/net6.0/win-x64/*.msi SHA256
           ls bin/Release/net6.0/win-x64/publish
       - name: Build the .NET Provisioner RPM Artifact
         id: dotnet_provisioner_build_rpm
