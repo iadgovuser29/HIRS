@@ -17,6 +17,13 @@ jobs:
       - name: Set git autocrlf to false # to avoid line ending issues
         run: |
           git config --global core.autocrlf false
+      - name: Install dotnet packaging tools
+        run: |
+          dotnet tool install --global dotnet-rpm
+          dotnet tool install --global dotnet-deb
+      - name: Add dotnet tools directory to PATH
+        run: |
+          Add-Content $env:GITHUB_PATH "~/.dotnet/tools"
       - name: Checkout the repo
         uses: actions/checkout@v2
         with:
@@ -81,7 +88,7 @@ jobs:
       - name: Setup tmate session on error
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 2 # The ssh session will be available for 2 minutes.
+        timeout-minutes: 5 # The ssh session will be available for 5 minutes.
         with:
           limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
 
