@@ -21,9 +21,10 @@ jobs:
         with:
           submodules: recursive
       - name: Run Unit Tests
-        cd HIRS_Provisioner.NET
-        dotnet restore
-        dotnet test
+        run: |
+          cd HIRS_Provisioner.NET
+          dotnet restore
+          dotnet test
       - name: Build and publish the .NET Provisioner for Windows
         run: |
           cd hirs
