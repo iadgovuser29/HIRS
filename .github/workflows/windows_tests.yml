@@ -39,27 +39,27 @@ jobs:
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
-          ls -al bin/Release/net6.0/win-x64/*.msi
+          ls bin/Release/net6.0/win-x64/*.msi
           certuil -hashFile bin/Release/net6.0/win-x64/*.msi SHA256
-          ls -al bin/Release/net6.0/win-x64/publish
+          ls bin/Release/net6.0/win-x64/publish
       - name: Build the .NET Provisioner RPM Artifact
         id: dotnet_provisioner_build_rpm
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet tool install --global dotnet-rpm
           dotnet rpm -r linux-x64 -c Release
-          ls -al bin/Release/net6.0/linux-x64/*.rpm
+          ls bin/Release/net6.0/linux-x64/*.rpm
           certutil -hashFile bin/Release/net6.0/linux-x64/*.rpm SHA256
-          ls -al bin/Release/net6.0/linux-x64/publish
+          ls bin/Release/net6.0/linux-x64/publish
       - name: Build the .NET Provisioner DEB Artifact
         id: dotnet_provisioner_build_deb
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet tool install --global dotnet-deb
           dotnet deb -r linux-x64 -c Release
-          ls -al bin/Release/net6.0/linux-x64/*.deb
+          ls bin/Release/net6.0/linux-x64/*.deb
           certutil -hashFile bin/Release/net6.0/linux-64/*.deb SHA256
-          ls -al bin/Release/net6.0/linux-x64/publish
+          ls bin/Release/net6.0/linux-x64/publish
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v3
         if: steps.dotnet_provisioner_build_msi.outcome == 'success'
