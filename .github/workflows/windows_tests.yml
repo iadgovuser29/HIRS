@@ -17,11 +17,9 @@ jobs:
       - name: Set git autocrlf to false # to avoid line ending issues
         run: |
           git config --global core.autocrlf false
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: |  # Note multiple paths in this script assume .NET 6
-            6
+      - name: Force use of .NET 6 # several statements below assume .NET 6
+        run: |
+          dotnet new globaljson --sdk-version 6 --force
       - name: Install dotnet packaging tools
         run: |
           dotnet tool install --global dotnet-rpm
@@ -58,7 +56,6 @@ jobs:
         id: dotnet_provisioner_build_rpm
         run: |
           cd HIRS_Provisioner.NET/hirs
-          dotnet tool install --global dotnet-rpm
           dotnet rpm -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm")
@@ -67,7 +64,6 @@ jobs:
         id: dotnet_provisioner_build_deb
         run: |
           cd HIRS_Provisioner.NET/hirs
-          dotnet tool install --global dotnet-deb
           dotnet deb -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/*.deb
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-64/*.deb")
