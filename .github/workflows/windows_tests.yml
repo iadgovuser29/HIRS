@@ -48,7 +48,7 @@ jobs:
           cd HIRS_Provisioner.NET/hirs
           dotnet tool install --global dotnet-rpm
           dotnet rpm -r linux-x64 -c Release
-          ls bin/Release/net6.0/linux-x64/*.rpm
+          ls bin/Release/net6.0/linux-x64/
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm")
           ls bin/Release/net6.0/linux-x64/publish
       - name: Build the .NET Provisioner DEB Artifact
@@ -78,4 +78,10 @@ jobs:
         with:
           name: hirs.deb
           path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/linux-x64/*.deb
+      - name: Setup tmate session on error
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 2 # The ssh session will be available for 2 minutes.
+        with:
+          limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
 
