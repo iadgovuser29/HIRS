@@ -1,9 +1,6 @@
 name: Windows-based Building, Unit and System Tests
 on: push
 
-env:
-  DOTNET_VERSION: '6.0'
-
 jobs:
   windows-builder:
     name: 
@@ -19,17 +16,17 @@ jobs:
           git config --global core.autocrlf false
       - name: Install dotnet packaging tools
         run: |
-          echo "dotnet packaging does not currently work with the .NET 7 SDK. Forcing .NET 6"
-          dotnet new globaljson --sdk-version 6.0.406 --force
           dotnet tool install --global dotnet-rpm
           dotnet tool install --global dotnet-deb
-      - name: Add dotnet tools directory to PATH
-        run: |
-          Add-Content $env:GITHUB_PATH "~/.dotnet/tools"
       - name: Checkout the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Work around dotnet packaging issue
+        run: |
+          echo "::warning ::dotnet packaging does not currently work with the .NET 7 SDK. Using .NET 6."
+          cd HIRS_Provisioner.NET
+          dotnet new globaljson --sdk-version 6.0.406 --force
       - name: Run Unit Tests
         run: |
           cd HIRS_Provisioner.NET
@@ -56,7 +53,6 @@ jobs:
         id: dotnet_provisioner_build_rpm
         run: |
           cd HIRS_Provisioner.NET/hirs
-          dotnet new globaljson --sdk-version 6.0.406 --force
           dotnet rpm -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm")
@@ -65,7 +61,6 @@ jobs:
         id: dotnet_provisioner_build_deb
         run: |
           cd HIRS_Provisioner.NET/hirs
-          dotnet new globaljson --sdk-version 6.0.406 --force
           dotnet deb -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/*.deb
           Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.deb")
@@ -75,7 +70,7 @@ jobs:
         if: steps.dotnet_provisioner_build_msi.outcome == 'success'
         with:
           name: hirs.msi
-          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/hirs.msi
+          path: HIRS_Provisioner.NET/hirs/bin/Release/net6.0/win-x64/*.msi
       - name: Upload RPM Artifact
         uses: actions/upload-artifact@v3
         if: steps.dotnet_provisioner_build_rpm.outcome == 'success'
