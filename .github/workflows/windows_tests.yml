@@ -22,9 +22,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Work around dotnet packaging issue
+      - name: Install dotnet packaging tools
         run: |
-          echo "::warning ::dotnet packaging does not currently work with the .NET 7 SDK. Using .NET 6."
+          dotnet tool install --global dotnet-deb
+          dotnet tool install --global dotnet-rpm
+      - name: Work around dotnet packaging versioning issue
+        run: |
+          echo "::warning ::dotnet packaging does not currently work with the .NET 7 SDK. This means the dotnet rpm and dotnet deb commands require usage of .NET 6. May need to look for alternatives. For now, forcing dotnet to use the .NET 6 SDK..."
           cd HIRS_Provisioner.NET
           dotnet new globaljson --sdk-version 6.0.406 --force
       - name: Run Unit Tests
