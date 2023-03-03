@@ -41,29 +41,35 @@ jobs:
         run: | 
           cd HIRS_Provisioner.NET/hirs
           dotnet publish -r linux-x64 -c Release --self-contained
-      - name: Build the .NET Provisioner MSI Artifact
+      - name: Create the .NET Provisioner MSI Artifact
         id: dotnet_provisioner_build_msi
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet msbuild hirs.csproj /t:Msi /P:TargetFramework=net6.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
           ls bin/Release/net6.0/win-x64/*.msi
-          Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/win-x64/*.msi")
+          $hash=(Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/win-x64/*.msi"))
+          echo "$hash"
+          echo ("::warning ::Artifact {0} {1} hash: {2}" -f (Split-Path $hash.Path -leaf),$hash.Algorithm,$hash.Hash)
           ls bin/Release/net6.0/win-x64/publish
-      - name: Build the .NET Provisioner RPM Artifact
+      - name: Create the .NET Provisioner RPM Artifact
         id: dotnet_provisioner_build_rpm
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet rpm -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/
-          Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm")
+          $hash=(Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.rpm"))
+          echo "$hash"
+          echo ("::warning ::Artifact {0} {1} hash: {2}" -f (Split-Path $hash.Path -leaf),$hash.Algorithm,$hash.Hash)
           ls bin/Release/net6.0/linux-x64/publish
-      - name: Build the .NET Provisioner DEB Artifact
+      - name: Create the .NET Provisioner DEB Artifact
         id: dotnet_provisioner_build_deb
         run: |
           cd HIRS_Provisioner.NET/hirs
           dotnet deb -r linux-x64 -c Release
           ls bin/Release/net6.0/linux-x64/*.deb
-          Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.deb")
+          $hash=(Get-FileHash -Algorithm SHA256 -Path (Get-ChildItem "bin/Release/net6.0/linux-x64/*.deb"))
+          echo "$hash"
+          echo ("::warning ::Artifact {0} {1} hash: {2}" -f (Split-Path $hash.Path -leaf),$hash.Algorithm,$hash.Hash)
           ls bin/Release/net6.0/linux-x64/publish
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v3
