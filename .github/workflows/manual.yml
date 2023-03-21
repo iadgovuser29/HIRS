@@ -151,13 +151,12 @@ jobs:
       - name: Launch docker compose
         shell: bash
         run: |
-          cd /work
           #docker compose -f ./compose.yml up
-            echo "Normally docker compose would launch the containers. Instead print the compose file."
-            cat work/compose.yml
-            ls -alR /downloads
-            ls -alR /logs
-            ls -alR /work
+          echo "Normally docker compose would launch the containers. Instead print the compose file."
+          cat work/compose.yml
+          ls -alR /downloads
+          ls -alR /logs
+          ls -alR /work
           
       - name: Setup tmate session on error
         if: ${{ failure() }}
