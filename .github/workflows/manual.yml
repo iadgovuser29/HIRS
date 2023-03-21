@@ -40,14 +40,14 @@ jobs:
       - name: Set up workspace
         shell: bash
         run: |
-          mkdir /downloads
-          mkdir /logs
-          mkdir /work
-          cd /work
+          mkdir downloads
+          mkdir logs
+          mkdir work
+          cd work
           tee -a .env << END
-          HIRS_CI_DOWNLOADS_DIR=/downloads
-          HIRS_CI_LOGS_DIR=/logs
-          HIRS_CI_WORK_DIR=/work
+          HIRS_CI_DOWNLOADS_DIR=../downloads
+          HIRS_CI_LOGS_DIR=../logs
+          HIRS_CI_WORK_DIR=../work
 
           HIRS_ACA_PORTAL_PORT=8443
 
@@ -85,13 +85,13 @@ jobs:
       - name: Download the provisioner install package, if specified
         if: ${{ inputs.provisioner_url }}    # if not empty
         run: |
-          cd /downloads
+          cd downloads
           wget ${{ inputs.provisioner_url }} -OutFile provisioner
       
       - name: Download the aca install package, if specified
         if: ${{ inputs.aca_url }}    # if not empty
         run: |
-          cd /downloads
+          cd downloads
           wget ${{ inputs.aca_url }} -OutFile provisioner
           
       - name: Update compose with client image selection
