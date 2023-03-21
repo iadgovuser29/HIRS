@@ -2,17 +2,13 @@ on:
   workflow_dispatch:
     inputs:
       provisioner_run_id:
-        description: 'Find the run id from the url'
+        description: 'Workflow Run ID to search for a provisioner install package'
         required: true
         type: string
-      provisioner_package_type:
-        description: 'Type of install package'
+      provisioner_package_name:
+        description: 'Filename of the provisioner package saved under the Run ID'
         required: true
-        type: choice
-        options:
-          - rpm
-          - deb
-          - msi
+        type: string
       client_os:
         description: 'Select the OS to install the provisioner'
         required: true
@@ -20,9 +16,11 @@ on:
         options:
           - CentOS7
           - Windows
-      aca_url:
-        description: 'Link to download the aca package in a ZIP file'
-        required: false
+      aca_run_id:
+        description: 'Workflow Run ID to search for an aca install package'
+        type: string
+      aca_package_name:
+        description: 'Filename of the aca package saved under the Run ID'
         type: string
       aca_os:
         description: 'Select the OS to install the ACA'
@@ -41,9 +39,10 @@ jobs:
         shell: bash
         run: |
           echo "Provisioner run id is \"${{ inputs.provisioner_run_id }}\""
-          echo "Provisioner package type is \"${{ inputs.provisioner_package_type }}\""
+          echo "Provisioner package name is \"${{ inputs.provisioner_package_name }}\""
           echo "Client OS is \"${{ inputs.client_os }}\""
-          echo "ACA URL is \"${{ inputs.aca_url }}\""
+          echo "ACA run id is \"${{ inputs.aca_run_id }}\""
+          echo "ACA package name is \"${{ inputs.aca_package_name }}\""
           echo "ACA OS is \"${{ inputs.aca_os }}\""
           
       - name: Set up workspace
@@ -92,19 +91,36 @@ jobs:
           END
           
       - name: Download the provisioner install package, if specified
-        id: download-artifact
+        id: download-artifact-provisioner
         uses: dawidd6/action-download-artifact@v2
         with:
           run_id: ${{ inputs.provisioner_run_id }}
-          name: ${{ inputs.provisioner_package_type }}
+          name: ${{ inputs.provisioner_package_name }}
           path: downloads
           search_artifacts: true
+          
+      - name: Rename provisioner package
+        shell: bash
+        run: | 
+          cd /downloads
+          mv ${{ inputs.provisioner_package_name }} provisioner
       
       - name: Download the aca install package, if specified
-        if: ${{ inputs.aca_url }}    # if not empty
-        run: |
-          cd downloads
-          wget ${{ inputs.aca_url }} -OutFile provisioner
+        id: download-artifact-aca
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ inputs.aca_run_id }}  && ${{ inputs.aca_package_name }}   # if not empty
+        with:
+          run_id: ${{ inputs.aca_run_id }}
+          name: ${{ inputs.aca_package_name }}
+          path: downloads
+          search_artifacts: true
+          
+      - name: Rename aca package
+        if: ${{ inputs.aca_run_id }}  && ${{ inputs.aca_package_name }}
+        shell: bash
+        run: | 
+          cd /downloads
+          mv ${{ inputs.aca_package_name }} aca
           
       - name: Update compose with client image selection
         shell: bash
