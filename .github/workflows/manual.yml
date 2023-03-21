@@ -1,3 +1,4 @@
+name: Manual
 on:
   workflow_dispatch:
     inputs:
@@ -49,11 +50,13 @@ jobs:
         shell: bash
         run: |
           mkdir downloads
+          mkdir installers
           mkdir logs
           mkdir work
           cd work
           tee -a .env << END
           HIRS_CI_DOWNLOADS_DIR=../downloads
+          HIRS_CI_INSTALLERS_DIR=../installers
           HIRS_CI_LOGS_DIR=../logs
           HIRS_CI_WORK_DIR=../work
 
@@ -97,13 +100,12 @@ jobs:
           run_id: ${{ inputs.provisioner_run_id }}
           name: ${{ inputs.provisioner_package_name }}
           path: downloads
-          search_artifacts: true
           
       - name: Rename provisioner package
         shell: bash
         run: | 
-          cd /downloads
-          mv ${{ inputs.provisioner_package_name }} provisioner
+          cd downloads
+          mv ./* ../installers/provisioner
       
       - name: Download the aca install package, if specified
         id: download-artifact-aca
@@ -113,14 +115,13 @@ jobs:
           run_id: ${{ inputs.aca_run_id }}
           name: ${{ inputs.aca_package_name }}
           path: downloads
-          search_artifacts: true
           
       - name: Rename aca package
         if: ${{ inputs.aca_run_id }}  && ${{ inputs.aca_package_name }}
         shell: bash
         run: | 
-          cd /downloads
-          mv ${{ inputs.aca_package_name }} aca
+          cd downloads
+          mv ./* ../installers/aca
           
       - name: Update compose with client image selection
         shell: bash
@@ -153,7 +154,7 @@ jobs:
           cd /work
           #docker compose -f ./compose.yml up
             echo "Normally docker compose would launch the containers. Instead print the compose file."
-            cat /work/compose.yml
+            cat work/compose.yml
             ls -alR /downloads
             ls -alR /logs
             ls -alR /work
