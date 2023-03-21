@@ -1,0 +1,133 @@
+on:
+  workflow_dispatch:
+    inputs:
+      provisioner_url:
+        description: 'Link to download the provisioner package in a ZIP file'
+        required: true
+        type: string
+      client_os:
+        description: 'Select the OS to install the provisioner'
+        required: true
+        type: choice
+        options:
+          - CentOS7
+          - Windows
+      aca_url:
+        description: 'Link to download the aca package in a ZIP file'
+        required: false
+        type: string
+      aca_os:
+        description: 'Select the OS to install the ACA'
+        required: true
+        type: choice
+        options:
+          - CentOS7
+          - PreBuilt
+          
+jobs:
+  launch-ci:
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - name: Print options
+        shell: bash
+        run: |
+          echo "Provisioner URL is \"${{ inputs.provisioner_url }}\""
+          echo "Client OS is \"${{ inputs.client_os }}\""
+          echo "ACA URL is \"${{ inputs.aca_url }}\""
+          echo "ACA OS is \"${{ inputs.aca_os }}\""
+          
+      - name: Set up workspace
+        shell: bash
+        run: |
+          mkdir /downloads
+          mkdir /logs
+          mkdir /work
+          cd /work
+          tee -a .env << END
+          HIRS_CI_DOWNLOADS_DIR=/downloads
+          HIRS_CI_LOGS_DIR=/logs
+          HIRS_CI_WORK_DIR=/work
+
+          HIRS_ACA_PORTAL_PORT=8443
+
+          END
+          tee -a compose.yml << END
+          version: "3.1"
+
+          services:
+              aca:
+                image: <ACA_OS_IMAGE>
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    tail -f /dev/null
+                volumes:
+                  - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+                ports:
+                  - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_PORT}"
+                env_file:
+                  - .env
+              provisioner:
+                image: <PROVISIONER_OS_IMAGE>
+                command:
+                  - /bin/bash
+                  - -c
+                  - |
+                    tail -f /dev/null
+                volumes:
+                  - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+                env_file:
+                  - .env
+          END
+          
+      - name: Download the provisioner
+        shell: bash
+        run: |
+          wget -O provisioner ${{ inputs.provisioner }}
+          
+      - name: Update compose with client image selection
+        shell: bash
+        run: | 
+          client_os_option="${{ inputs.client_os }}"
+          client_os_image=""
+          if [ $client_os_option = "CentOS7" ]; then
+            client_os_image="centos7"
+          else
+            echo "::warning Unsupported client_os option."
+            exit 1
+          fi
+          sed -i -e "s/<PROVISIONER_OS_IMAGE>/$client_os_image/g" /work/compose.yml	
+                    
+      - name: Update compose with aca image selection
+        shell: bash
+        run: | 
+          aca_os_option="${{ inputs.aca_os }}"
+          aca_os_image="ghcr.io/nsacyber/hirs/aca-centos7"
+          if [ $aca_os_option = "CentOS7" ]; then
+            aca_os_image="centos7"
+          else
+            echo "::warning Using the pre-built ACA image."
+          fi
+          sed -i -e "s/<ACA_OS_IMAGE>/$aca_os_image/g" /work/compose.yml	
+          
+      - name: Launch docker compose
+        shell: bash
+        run: |
+          cd /work
+          #docker compose -f ./compose.yml up
+            echo "Normally docker compose would launch the containers. Instead print the compose file."
+            cat /work/compose.yml
+            ls -alR /downloads
+            ls -alR /logs
+            ls -alR /work
+          
+      - name: Setup tmate session on error
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5 # The ssh session will be available for 5 minutes.
+        with:
+          limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
+          
+          
