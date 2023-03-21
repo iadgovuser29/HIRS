@@ -82,10 +82,17 @@ jobs:
                   - .env
           END
           
-      - name: Download the provisioner
-        shell: bash
+      - name: Download the provisioner install package, if specified
+        if: ${{ inputs.provisioner_url }}    # if not empty
         run: |
-          wget -O provisioner ${{ inputs.provisioner }}
+          cd /downloads
+          wget ${{ inputs.provisioner_url }} -OutFile provisioner
+      
+      - name: Download the aca install package, if specified
+        if: ${{ inputs.aca_url }}    # if not empty
+        run: |
+          cd /downloads
+          wget ${{ inputs.aca_url }} -OutFile provisioner
           
       - name: Update compose with client image selection
         shell: bash
