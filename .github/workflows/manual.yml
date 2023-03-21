@@ -1,10 +1,18 @@
 on:
   workflow_dispatch:
     inputs:
-      provisioner_url:
-        description: 'Link to download the provisioner package in a ZIP file'
+      provisioner_run_id:
+        description: 'Find the run id from the url'
         required: true
         type: string
+      provisioner_package_type:
+        description: 'Type of install package'
+        required: true
+        type: choice
+        options:
+          - rpm
+          - deb
+          - msi
       client_os:
         description: 'Select the OS to install the provisioner'
         required: true
@@ -32,7 +40,8 @@ jobs:
       - name: Print options
         shell: bash
         run: |
-          echo "Provisioner URL is \"${{ inputs.provisioner_url }}\""
+          echo "Provisioner run id is \"${{ inputs.provisioner_run_id }}\""
+          echo "Provisioner package type is \"${{ inputs.provisioner_package_type }}\""
           echo "Client OS is \"${{ inputs.client_os }}\""
           echo "ACA URL is \"${{ inputs.aca_url }}\""
           echo "ACA OS is \"${{ inputs.aca_os }}\""
@@ -83,10 +92,13 @@ jobs:
           END
           
       - name: Download the provisioner install package, if specified
-        if: ${{ inputs.provisioner_url }}    # if not empty
-        run: |
-          cd downloads
-          wget ${{ inputs.provisioner_url }} -OutFile provisioner
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+          with:
+            run_id: ${{ inputs.provisioner_run_id }}
+            name: ${{ inputs.provisioner_package_type }}
+            path: downloads
+            search_artifacts: true
       
       - name: Download the aca install package, if specified
         if: ${{ inputs.aca_url }}    # if not empty
