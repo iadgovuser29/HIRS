@@ -94,11 +94,11 @@ jobs:
       - name: Download the provisioner install package, if specified
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
-          with:
-            run_id: ${{ inputs.provisioner_run_id }}
-            name: ${{ inputs.provisioner_package_type }}
-            path: downloads
-            search_artifacts: true
+        with:
+          run_id: ${{ inputs.provisioner_run_id }}
+          name: ${{ inputs.provisioner_package_type }}
+          path: downloads
+          search_artifacts: true
       
       - name: Download the aca install package, if specified
         if: ${{ inputs.aca_url }}    # if not empty
