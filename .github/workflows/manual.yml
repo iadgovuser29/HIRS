@@ -146,7 +146,7 @@ jobs:
           else
             echo "::warning Using the pre-built ACA image."
           fi
-          sed -i -e "s/<ACA_OS_IMAGE>/$aca_os_image/g" /work/compose.yml	
+          sed -i -e "s/<ACA_OS_IMAGE>/$aca_os_image/g" work/compose.yml	
           
       - name: Launch docker compose
         shell: bash
