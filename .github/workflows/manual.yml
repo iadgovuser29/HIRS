@@ -109,8 +109,8 @@ jobs:
       
       - name: Download the aca install package, if specified
         id: download-artifact-aca
+        ${{ inputs.aca_run_id && inputs.aca_package_name }} # if not empty
         uses: dawidd6/action-download-artifact@v2
-        if: ${{ inputs.aca_run_id }}  && ${{ inputs.aca_package_name }}   # if not empty
         with:
           run_id: ${{ inputs.aca_run_id }}
           name: ${{ inputs.aca_package_name }}
