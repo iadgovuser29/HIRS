@@ -134,7 +134,7 @@ jobs:
             echo "::warning Unsupported client_os option."
             exit 1
           fi
-          sed -i -e "s/<PROVISIONER_OS_IMAGE>/$client_os_image/g" /work/compose.yml	
+          sed -i -e "s/<PROVISIONER_OS_IMAGE>/$client_os_image/g" work/compose.yml	
                     
       - name: Update compose with aca image selection
         shell: bash
