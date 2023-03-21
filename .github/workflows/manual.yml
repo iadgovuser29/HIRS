@@ -140,7 +140,7 @@ jobs:
         shell: bash
         run: | 
           aca_os_option="${{ inputs.aca_os }}"
-          aca_os_image="ghcr.io/nsacyber/hirs/aca-centos7"
+          aca_os_image="ghcr.io\\/nsacyber\\/hirs\\/aca-centos7"
           if [ $aca_os_option = "CentOS7" ]; then
             aca_os_image="centos7"
           else
