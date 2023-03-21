@@ -1,3 +1,5 @@
+name: Manual workflow
+
 on:
   workflow_dispatch:
     inputs:
