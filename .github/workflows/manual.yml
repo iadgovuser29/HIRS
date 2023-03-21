@@ -117,7 +117,7 @@ jobs:
           path: downloads
           
       - name: Rename aca package
-        if: ${{ inputs.aca_run_id }}  && ${{ inputs.aca_package_name }}
+        if: ${{ inputs.aca_run_id && inputs.aca_package_name }} # if not empty
         shell: bash
         run: | 
           cd downloads
