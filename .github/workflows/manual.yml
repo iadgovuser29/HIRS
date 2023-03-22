@@ -75,9 +75,9 @@ jobs:
                   - |
                     tail -f /dev/null
                 volumes:
-                  - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+                  - \${HIRS_CI_LOGS_DIR}:\${HIRS_CI_LOGS_DIR}
                 ports:
-                  - "${HIRS_ACA_PORTAL_PORT}:${HIRS_ACA_PORTAL_PORT}"
+                  - "\${HIRS_ACA_PORTAL_PORT}:\${HIRS_ACA_PORTAL_PORT}"
                 env_file:
                   - .env
               provisioner:
@@ -88,7 +88,7 @@ jobs:
                   - |
                     tail -f /dev/null
                 volumes:
-                  - ${HIRS_CI_LOGS_DIR}:${HIRS_CI_LOGS_DIR}
+                  - \${HIRS_CI_LOGS_DIR}:\${HIRS_CI_LOGS_DIR}
                 env_file:
                   - .env
           END
