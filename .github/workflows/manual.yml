@@ -55,10 +55,14 @@ jobs:
           mkdir work
           cd work
           tee -a .env << END
-          HIRS_CI_DOWNLOADS_DIR=${{ github.workspace }}/downloads
-          HIRS_CI_INSTALLERS_DIR=${{ github.workspace }}/installers
-          HIRS_CI_LOGS_DIR=${{ github.workspace }}/logs
-          HIRS_CI_WORK_DIR=${{ github.workspace }}/work
+          HIRS_CI_DOWNLOADS_DIR_SRC=${{ github.workspace }}/downloads
+          HIRS_CI_INSTALLERS_DIR_SRC=${{ github.workspace }}/installers
+          HIRS_CI_LOGS_DIR_SRC=${{ github.workspace }}/logs
+          HIRS_CI_WORK_DIR_SRC=${{ github.workspace }}/work
+          HIRS_CI_DOWNLOADS_DIR=/ci/downloads
+          HIRS_CI_INSTALLERS_DIR=/ci/installers
+          HIRS_CI_LOGS_DIR=/ci/logs
+          HIRS_CI_WORK_DIR=/ci/work
 
           HIRS_ACA_PORTAL_PORT=8443
 
@@ -75,7 +79,8 @@ jobs:
                   - |
                     tail -f /dev/null
                 volumes:
-                  - \${HIRS_CI_LOGS_DIR}:\${HIRS_CI_LOGS_DIR}
+                  - \${HIRS_CI_INSTALLERS_DIR_SRC}:\${HIRS_CI_INSTALLERS_DIR}
+                  - \${HIRS_CI_LOGS_DIR_SRC}:\${HIRS_CI_LOGS_DIR}
                 ports:
                   - "\${HIRS_ACA_PORTAL_PORT}:\${HIRS_ACA_PORTAL_PORT}"
                 env_file:
@@ -88,7 +93,8 @@ jobs:
                   - |
                     tail -f /dev/null
                 volumes:
-                  - \${HIRS_CI_LOGS_DIR}:\${HIRS_CI_LOGS_DIR}
+                  - \${HIRS_CI_INSTALLERS_DIR_SRC}:\${HIRS_CI_INSTALLERS_DIR}
+                  - \${HIRS_CI_LOGS_DIR_SRC}:\${HIRS_CI_LOGS_DIR}
                 env_file:
                   - .env
           END
