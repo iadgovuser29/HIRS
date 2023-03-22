@@ -111,7 +111,9 @@ jobs:
         shell: bash
         run: | 
           cd downloads
-          mv ./* ../installers/provisioner
+          mv -f ./*.rpm ../installers/provisioner.rpm
+          mv -f ./*.deb ../installers/provisioner.deb
+          mv -f ./*.msi ../installers/provisioner.msi
       
       - name: Download the aca install package, if specified
         id: download-artifact-aca
@@ -127,7 +129,9 @@ jobs:
         shell: bash
         run: | 
           cd downloads
-          mv ./* ../installers/aca
+          mv -f ./*.rpm ../installers/aca.rpm
+          mv -f ./*.deb ../installers/aca.deb
+          mv -f ./*.msi ../installers/aca.msi
           
       - name: Update compose with client image selection
         shell: bash
