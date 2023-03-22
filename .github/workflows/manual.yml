@@ -109,11 +109,11 @@ jobs:
           
       - name: Rename provisioner package
         shell: bash
-        run: | 
+        run: |   mv a.dk a.rpm 2> /dev/null && echo "Renamed the rpm."
           cd downloads
-          mv ./*.rpm ../installers/provisioner.rpm || true
-          mv ./*.deb ../installers/provisioner.deb || true
-          mv ./*.msi ../installers/provisioner.msi || true
+          mv ./*.rpm ../installers/provisioner.rpm 2> /dev/null && echo "Moved the rpm." || true
+          mv ./*.deb ../installers/provisioner.deb 2> /dev/null && echo "Moved the deb." || true
+          mv ./*.msi ../installers/provisioner.msi 2> /dev/null && echo "Moved the msi." || true
       
       - name: Download the aca install package, if specified
         id: download-artifact-aca
@@ -129,9 +129,9 @@ jobs:
         shell: bash
         run: | 
           cd downloads
-          mv ./*.rpm ../installers/aca.rpm || true
-          mv ./*.deb ../installers/aca.deb || true
-          mv ./*.msi ../installers/aca.msi || true
+          mv ./*.rpm ../installers/aca.rpm 2> /dev/null && echo "Moved the rpm." || true
+          mv ./*.deb ../installers/aca.deb 2> /dev/null && echo "Moved the deb." || true
+          mv ./*.msi ../installers/aca.msi 2> /dev/null && echo "Moved the msi." || true
           
       - name: Update compose with client image selection
         shell: bash
