@@ -55,10 +55,10 @@ jobs:
           mkdir work
           cd work
           tee -a .env << END
-          HIRS_CI_DOWNLOADS_DIR=../downloads
-          HIRS_CI_INSTALLERS_DIR=../installers
-          HIRS_CI_LOGS_DIR=../logs
-          HIRS_CI_WORK_DIR=../work
+          HIRS_CI_DOWNLOADS_DIR=${{ github.workspace }}/work/downloads
+          HIRS_CI_INSTALLERS_DIR=${{ github.workspace }}/work/installers
+          HIRS_CI_LOGS_DIR=${{ github.workspace }}/work/logs
+          HIRS_CI_WORK_DIR=${{ github.workspace }}/work
 
           HIRS_ACA_PORTAL_PORT=8443
 
