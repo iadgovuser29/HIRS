@@ -109,7 +109,7 @@ jobs:
           
       - name: Rename provisioner package
         shell: bash
-        run: |   mv a.dk a.rpm 2> /dev/null && echo "Renamed the rpm."
+        run: |
           cd downloads
           mv ./*.rpm ../installers/provisioner.rpm 2> /dev/null && echo "Moved the rpm." || true
           mv ./*.deb ../installers/provisioner.deb 2> /dev/null && echo "Moved the deb." || true
