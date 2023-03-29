@@ -43,6 +43,7 @@ jobs:
           ./.github/docker/scripts/control/exec-centos7-copy-artifacts.sh
       - name: Stop container
         shell: bash
+        run: |
           ./.github/docker/scripts/control/stop-centos7-gradle.sh
       - name: Upload ACA Artifact
         if: steps.linux_gradle_package.outcome == 'success'
