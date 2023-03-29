@@ -15,13 +15,13 @@ using Serilog;
 namespace hirs {
     public class ClassicDeviceInfoCollector : IHirsDeviceInfoCollector {
         public static readonly string NOT_SPECIFIED = "Not Specified";
-        public static readonly string LINUX_DEFAULT_BIOS_VENDOR_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_BIOS_VERSION_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_BIOS_DATE_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_SYS_VENDOR_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_PRODUCT_NAME_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_PRODUCT_VERSION_PATH = "/sys/class/dmi/id";
-        public static readonly string LINUX_DEFAULT_PRODUCT_SERIAL_PATH = "/sys/class/dmi/id";
+        public static readonly string LINUX_DEFAULT_BIOS_VENDOR_PATH = "/sys/class/dmi/id/bios_vendor";
+        public static readonly string LINUX_DEFAULT_BIOS_VERSION_PATH = "/sys/class/dmi/id/bios_version";
+        public static readonly string LINUX_DEFAULT_BIOS_DATE_PATH = "/sys/class/dmi/id/bios_date";
+        public static readonly string LINUX_DEFAULT_SYS_VENDOR_PATH = "/sys/class/dmi/id/sys_vendor";
+        public static readonly string LINUX_DEFAULT_PRODUCT_NAME_PATH = "/sys/class/dmi/id/product_name";
+        public static readonly string LINUX_DEFAULT_PRODUCT_VERSION_PATH = "/sys/class/dmi/id/product_version";
+        public static readonly string LINUX_DEFAULT_PRODUCT_SERIAL_PATH = "/sys/class/dmi/id/product_serial";
         private readonly Settings? settings;
 
         public ClassicDeviceInfoCollector() {
