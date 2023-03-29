@@ -15,6 +15,7 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+          chmod -R +x .github/docker/scripts/
           ./.github/docker/scripts/control/run-centos7-gradle.sh
       - name: Build and Unit Test
         shell: bash
