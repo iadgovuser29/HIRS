@@ -14,6 +14,7 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
           ./.github/docker/scripts/control/run-centos7-gradle.sh
       - name: Build and Unit Test
         shell: bash
@@ -69,6 +70,7 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
           ./.github/docker/scripts/control/run-centos7-dotnet.sh
       - name: Build and Unit Test
         shell: bash
