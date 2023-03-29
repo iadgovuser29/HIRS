@@ -15,21 +15,20 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
-          chmod -R +x .github/docker/scripts/
-          ./.github/docker/scripts/control/run-centos7-gradle.sh
+          bash HIRS/.github/docker/scripts/control/run-centos7-gradle.sh
       - name: Build and Unit Test
         shell: bash
         run: |
-          ./.github/docker/scripts/control/exec-centos7-gradlew-build.sh
+          bash HIRS/.github/docker/scripts/control/exec-centos7-gradlew-build.sh
       - name: Package
         id: linux_gradle_package
         shell: bash
         run: |
-          ./.github/docker/scripts/control/exec-centos7-package.sh
+          bash HIRS/.github/docker/scripts/control/exec-centos7-package.sh
       - name: Copy build logs to runner
         shell: bash
         run: |
-          ./.github/docker/scripts/control/exec-centos7-copy-logs.sh
+          bash HIRS/.github/docker/scripts/control/exec-centos7-copy-logs.sh
       - name: Upload logs
         uses: actions/upload-artifact@v3
         with:
