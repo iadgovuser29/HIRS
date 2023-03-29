@@ -15,21 +15,22 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
-          chmod +x .github/docker/scripts/control/*.sh
-          bash .github/docker/scripts/control/run-centos7-gradle.sh
+          chmod +x .github/docker/scripts/*.sh
+          ./.github/docker/scripts/setup-chmod.sh
+          ./.github/docker/scripts/control/run-centos7-gradle.sh
       - name: Build and Unit Test
         shell: bash
         run: |
-          bash HIRS/.github/docker/scripts/control/exec-centos7-gradlew-build.sh
+          bash .github/docker/scripts/control/exec-centos7-gradlew-build.sh
       - name: Package
         id: linux_gradle_package
         shell: bash
         run: |
-          bash HIRS/.github/docker/scripts/control/exec-centos7-package.sh
+          bash .github/docker/scripts/control/exec-centos7-package.sh
       - name: Copy build logs to runner
         shell: bash
         run: |
-          bash HIRS/.github/docker/scripts/control/exec-centos7-copy-logs.sh
+          bash .github/docker/scripts/control/exec-centos7-copy-logs.sh
       - name: Upload logs
         uses: actions/upload-artifact@v3
         with:
@@ -40,6 +41,9 @@ jobs:
         shell: bash
         run: |
           ./.github/docker/scripts/control/exec-centos7-copy-artifacts.sh
+      - name: Stop container
+        shell: bash
+          ./.github/docker/scripts/control/stop-centos7-gradle.sh
       - name: Upload ACA Artifact
         if: steps.linux_gradle_package.outcome == 'success'
         uses: actions/upload-artifact@v3
@@ -72,6 +76,8 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+          chmod +x .github/docker/scripts/*.sh
+          ./.github/docker/scripts/setup-chmod.sh
           ./.github/docker/scripts/control/run-centos7-dotnet.sh
       - name: Build and Unit Test
         shell: bash
@@ -84,7 +90,10 @@ jobs:
       - name: Copy build logs to runner
         shell: bash
         run: |
-
+      - name: Stop container
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/stop-centos7-dotnet.sh
       - name: Setup tmate session on error
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3

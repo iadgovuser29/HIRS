@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APP_HOME="`dirname "$0"`"
-DOCKER_SCRIPTS_COMMON="$APP_HOME""/common.sh"
+DOCKER_SCRIPTS_COMMON="$APP_HOME""/../common.sh"
 
 source $DOCKER_SCRIPTS_COMMON
 
