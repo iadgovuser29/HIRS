@@ -15,6 +15,7 @@ jobs:
         shell: bash
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+          mkdir -p /tmp/hirs-builders/centos7/
           chmod +x .github/docker/scripts/*.sh
           ./.github/docker/scripts/setup-chmod.sh
           ./.github/docker/scripts/control/run-centos7-gradle.sh
