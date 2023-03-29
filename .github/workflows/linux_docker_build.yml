@@ -1,0 +1,91 @@
+name: Linux-based Building and Unit Tests
+on: push
+
+jobs:
+  linux-gradle-builder:
+    name:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Launch container
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/run-centos7-gradle.sh
+      - name: Build and Unit Test
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/exec-centos7-gradlew-build.sh
+      - name: Package
+        id: linux_gradle_package
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/exec-centos7-package.sh
+      - name: Copy build logs to runner
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/exec-centos7-copy-logs.sh
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: logs.zip
+          path: /tmp/hirs-builders/centos7/*.log
+      - name: Copy artifacts to runner
+        if: steps.linux_gradle_package.outcome == 'success'
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/exec-centos7-copy-artifacts.sh
+      - name: Upload ACA Artifact
+        if: steps.linux_gradle_package.outcome == 'success'
+        uses: actions/upload-artifact@v3
+        with:
+          name: HIRS_AttestationCA.rpm
+          path: /tmp/hirs-builders/centos7/*Att*el7*
+      - name: Upload Provisioner Artifact
+        if: steps.linux_gradle_package.outcome == 'success'
+        uses: actions/upload-artifact@v3
+        with:
+          name: HIRS_Provisioner_TPM_2_0.rpm
+          path: /tmp/hirs-buildrs/centos7/*Prov*el7*
+      - name: Setup tmate session on error
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5 # The ssh session will be available for 5 minutes.
+        with:
+          limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
+
+  linux-dotnet-builder:
+    name:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Launch container
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/run-centos7-dotnet.sh
+      - name: Build and Unit Test
+        shell: bash
+        run: |
+          ./.github/docker/scripts/control/exec-centos7-dotnet-build-linux.sh
+      - name: Package
+        id: linux_dotnet_package
+        shell: bash
+        run: |
+      - name: Copy build logs to runner
+        shell: bash
+        run: |
+
+      - name: Setup tmate session on error
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5 # The ssh session will be available for 5 minutes.
+        with:
+          limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
+
