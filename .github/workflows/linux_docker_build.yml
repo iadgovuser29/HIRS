@@ -38,7 +38,6 @@ jobs:
         run: |
           docker ps
           ./.github/docker/scripts/control/exec-centos7-copy-logs.sh
-          exit 1
       - name: Upload logs
         uses: actions/upload-artifact@v3
         with:
@@ -67,6 +66,10 @@ jobs:
         with:
           name: HIRS_Provisioner_TPM_2_0.rpm
           path: /tmp/hirs-buildrs/centos7/*Prov*el7*
+      - name: Remove this step
+        shell: bash
+        run: |
+          exit 1
       - name: Setup tmate session on error
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
