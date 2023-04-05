@@ -80,7 +80,7 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+          echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           chmod +x .github/docker/scripts/*.sh
           ./.github/docker/scripts/setup-chmod.sh
           ./.github/docker/scripts/control/run-centos7-dotnet.sh
