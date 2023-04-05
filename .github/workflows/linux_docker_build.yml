@@ -14,10 +14,13 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
+          echo "Authenticate to ghcr"
           echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           mkdir -p /tmp/hirs-builders/centos7/
+          echo "Ensure scripts are executable"
           chmod +x .github/docker/scripts/*.sh
           ./.github/docker/scripts/setup-chmod.sh
+          echo "Launch the container"
           ./.github/docker/scripts/control/run-centos7-gradle.sh
       - name: Build and Unit Test
         shell: bash
