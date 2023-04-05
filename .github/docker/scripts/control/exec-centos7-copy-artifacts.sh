@@ -6,6 +6,5 @@ DOCKER_SCRIPTS_COMMON="$APP_HOME""/../common.sh"
 
 source $DOCKER_SCRIPTS_COMMON
 
-docker exec -i $DOCKER_CONTAINER_CENTOS7_BUILDER_GRADLE_NAME /bin/bash -c "find $BUILDER_WORKING_REPO_DIR=/package/rpm/RPMS/ -iname \"*el7*rpm\" -exec cp {} $BUILDER_OUTPUT_DIR \;" && echo "1" 
-
+docker exec -i $DOCKER_CONTAINER_CENTOS7_BUILDER_GRADLE_NAME /bin/bash -c "find $BUILDER_WORKING_REPO_DIR/package/ -iname *.rpm -exec cp {} $BUILDER_OUTPUT_DIR \;" && echo "1" 
 
