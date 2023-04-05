@@ -25,16 +25,19 @@ jobs:
       - name: Build and Unit Test
         shell: bash
         run: |
-          bash .github/docker/scripts/control/exec-centos7-gradlew-build.sh
+          docker ps
+          ./.github/docker/scripts/control/exec-centos7-gradlew-build.sh
       - name: Package
         id: linux_gradle_package
         shell: bash
         run: |
-          bash .github/docker/scripts/control/exec-centos7-package.sh
+          docker ps
+          ./.github/docker/scripts/control/exec-centos7-package.sh
       - name: Copy build logs to runner
         shell: bash
         run: |
-          bash .github/docker/scripts/control/exec-centos7-copy-logs.sh
+          docker ps
+          ./.github/docker/scripts/control/exec-centos7-copy-logs.sh
       - name: Upload logs
         uses: actions/upload-artifact@v3
         with:
@@ -44,10 +47,12 @@ jobs:
         if: steps.linux_gradle_package.outcome == 'success'
         shell: bash
         run: |
+          docker ps
           ./.github/docker/scripts/control/exec-centos7-copy-artifacts.sh
       - name: Stop container
         shell: bash
         run: |
+          docker ps
           ./.github/docker/scripts/control/stop-centos7-gradle.sh
       - name: Upload ACA Artifact
         if: steps.linux_gradle_package.outcome == 'success'
