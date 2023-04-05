@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x # echo commands as they are executed
 
 ### This script expects the desired repo to already be checked out
 ### and mounted to /repo.

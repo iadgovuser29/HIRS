@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x # echo commands as they are executed
 
-APP_HOME="`dirname "$0"`"
+APP_HOME=$(realpath "`dirname "$0"`")
 DOCKER_SCRIPTS_COMMON="$APP_HOME""/../common.sh"
 
 source $DOCKER_SCRIPTS_COMMON

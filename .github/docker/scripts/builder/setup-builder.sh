@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x # echo commands as they are executed
 
 REPO_DIR="/repo"
 WORKING_REPO_DIR="/HIRS"
