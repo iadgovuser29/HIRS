@@ -9,7 +9,7 @@
 ##       common.sh
 ##       control/
 #######
-DOCKER_SCRIPTS_HOME="`dirname "$0"`"
+DOCKER_SCRIPTS_HOME=$(realpath "`dirname "$0"`")
 
 BUILDER_REPO_DIR="/repo"
 BUILDER_WORKING_REPO_DIR="/HIRS"
