@@ -14,6 +14,11 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
+          # Change dash to bash
+          sudo echo "dash dash/sh boolean false" | sudo debconf-set-selections
+          sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+          export RUNLEVEL=1
+
           echo "Authenticate to ghcr"
           echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           mkdir -p /tmp/hirs-builders/centos7/
@@ -85,6 +90,11 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
+          # Change dash to bash
+          sudo echo "dash dash/sh boolean false" | sudo debconf-set-selections
+          sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+          export RUNLEVEL=1
+
           echo "Authenticate to ghcr"
           echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           mkdir -p /tmp/hirs-builders/centos7/
