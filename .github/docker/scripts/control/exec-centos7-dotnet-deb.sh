@@ -6,5 +6,5 @@ DOCKER_SCRIPTS_COMMON="$APP_HOME""/../common.sh"
 
 source $DOCKER_SCRIPTS_COMMON
 
-docker exec -i $DOCKER_CONTAINER_CENTOS7_BUILDER_GRADLE_NAME /bin/bash -c "find $BUILDER_WORKING_REPO_DIR/package/ -iname *.rpm -exec cp {} $BUILDER_OUTPUT_DIR \;" && echo "1" 
+docker exec -i $DOCKER_CONTAINER_CENTOS7_BUILDER_DOTNET_NAME /bin/bash -c "$BUILDER_WORKING_REPO_DIR/.github/docker/scripts/builder/run-dotnet-deb.sh" && echo "1"
 
