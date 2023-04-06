@@ -23,13 +23,13 @@ jobs:
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-gradlew-build.sh
+          ./.github/docker/scripts/control/exec-centos7-gradle-build.sh
       - name: Package
         id: linux_gradle_package
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-package.sh
+          ./.github/docker/scripts/control/exec-centos7-gradle-package.sh
       - name: Copy build logs to runner
         shell: bash
         run: |
@@ -85,9 +85,6 @@ jobs:
           echo "Authenticate to ghcr"
           echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           mkdir -p /tmp/hirs-builders/centos7/
-          echo "Ensure scripts are executable"
-          chmod +x .github/docker/scripts/*.sh
-          ./.github/docker/scripts/setup-chmod.sh
           echo "Launch the container"
           ./.github/docker/scripts/control/run-centos7-dotnet.sh
       - name: Build x64 Linux
@@ -115,25 +112,25 @@ jobs:
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-dotnet-rpm.sh
+          ./.github/docker/scripts/control/exec-centos7-dotnet-package-rpm.sh
       - name: Package deb
         id: linux_dotnet_package_deb
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-dotnet-deb.sh
+          ./.github/docker/scripts/control/exec-centos7-dotnet-package-deb.sh
       - name: Package zip for Windows
         id: linux_dotnet_package_zip_win
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-dotnet-zip-win.sh
+          ./.github/docker/scripts/control/exec-centos7-dotnet-package-zip-win.sh
       - name: Package zip for Linux
         id: linux_dotnet_package_zip_linux
         shell: bash
         run: |
           docker ps
-          ./.github/docker/scripts/control/exec-centos7-dotnet-zip-linux.sh
+          ./.github/docker/scripts/control/exec-centos7-dotnet-package-zip-linux.sh
       - name: Copy build logs to runner
         shell: bash
         run: |
