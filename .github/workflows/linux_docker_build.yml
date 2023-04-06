@@ -90,11 +90,6 @@ jobs:
       - name: Launch container
         shell: bash
         run: |
-          # Change dash to bash
-          sudo echo "dash dash/sh boolean false" | sudo debconf-set-selections
-          sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
-          export RUNLEVEL=1
-
           echo "Authenticate to ghcr"
           echo ${{ secrets.PKG_PWD }} | docker login ghcr.io -u $ --password-stdin
           mkdir -p /tmp/hirs-builders/centos7/
@@ -103,11 +98,6 @@ jobs:
           ./.github/docker/scripts/setup-chmod.sh
           echo "Launch the container"
           ./.github/docker/scripts/control/run-centos7-dotnet.sh
-      - name: Build x64 Linux
-        shell: bash
-        run: |
-          docker ps
-          ./.github/docker/scripts/control/exec-centos7-dotnet-build-linux.sh
       - name: Test x64 Linux
         shell: bash
         run: |
