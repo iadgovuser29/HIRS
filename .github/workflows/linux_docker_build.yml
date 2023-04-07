@@ -169,7 +169,7 @@ jobs:
         with:
           name: hirs.windows.zip
           path: /tmp/hirs-builders/centos7/hirs*win*zip
-      - name: Upload Deb
+      - name: Upload zip for Linux
         if: steps.linux_gradle_package_zip_linux.outcome == 'success'
         uses: actions/upload-artifact@v3
         with:
