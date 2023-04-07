@@ -1,0 +1,25 @@
+FROM centos:7
+LABEL org.opencontainers.image.description This container contains a snapshot of dependencies and tools used to build HIRS.
+
+# Install packages for building HIRS
+RUN yum -y update && yum clean all
+RUN yum install -y epel-release
+RUN yum install -y java-1.8.0-openjdk-devel protobuf-compiler rpm-build cmake make git gcc-c++ doxygen graphviz python3 libssh2-devel openssl protobuf-devel tpm2-tss-devel tpm2-abrmd-devel trousers-devel libcurl-devel cppcheck log4cplus-devel re2-devel sudo vim wget unzip
+RUN git clone --recurse-submodules https://github.com/nsacyber/HIRS.git /repo
+WORKDIR /repo
+RUN ./gradlew clean build test
+WORKDIR /
+
+# Install dotnet
+RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+RUN yum install -y dotnet-sdk-6.0
+RUN dotnet tool install --global dotnet-deb
+RUN dotnet tool install --global dotnet-rpm
+RUN dotnet tool install --global dotnet-zip
+
+# Set Environment Variables
+ENV JAVA_HOME="/usr/lib/jvm/java-1.8.0-openjdk"
+ENV PATH="$JAVA_HOME/bin:$PATH"
+ENV PATH="/root/.dotnet:$PATH"
+ENV PATH="/root/.dotnet/tools:$PATH"
+
