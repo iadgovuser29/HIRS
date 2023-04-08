@@ -69,6 +69,10 @@ jobs:
         timeout-minutes: 5 # The ssh session will be available for 5 minutes.
         with:
           limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
+      - name: Ensure error shown if tmate was run
+        if: steps.tmate_section.conclusion != 'skipped'
+        run: |
+          exit 1
 
   linux-dotnet-builder:
     name:
@@ -141,6 +145,7 @@ jobs:
         with:
           name: dotnet-logs.zip
           path: /tmp/hirs-builders/centos7/*.log
+          if-no-files-found: ignore
       - name: Copy artifacts to runner
         shell: bash
         run: |
@@ -158,7 +163,7 @@ jobs:
           name: hirs.rpm
           path: /tmp/hirs-builders/centos7/hirs*rpm
       - name: Upload Deb
-        if: steps.linux_gradle_package_deb.outcome == 'success'
+        if: steps.linux_dotnet_package_deb.outcome == 'success'
         uses: actions/upload-artifact@v3
         with:
           name: hirs.deb
@@ -170,15 +175,20 @@ jobs:
           name: hirs.windows.zip
           path: /tmp/hirs-builders/centos7/hirs*win*zip
       - name: Upload zip for Linux
-        if: steps.linux_gradle_package_zip_linux.outcome == 'success'
+        if: steps.linux_dotnet_package_zip_linux.outcome == 'success'
         uses: actions/upload-artifact@v3
         with:
           name: hirs.linux.zip
           path: /tmp/hirs-builders/centos7/hirs*linux*zip
       - name: Setup tmate session on error
+        id: tmate_section
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 5 # The ssh session will be available for 5 minutes.
         with:
           limit-access-to-actor: true # Only the person who pushed can access- with a github-registered key.
+      - name: Ensure error shown if tmate was run
+        if: steps.tmate_section.conclusion != 'skipped'
+        run: |
+          exit 1
 
