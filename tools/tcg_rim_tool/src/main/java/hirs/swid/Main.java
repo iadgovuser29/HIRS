@@ -2,8 +2,9 @@ package hirs.swid;
 
 import hirs.swid.utils.Commander;
 import com.beust.jcommander.JCommander;
+import hirs.swid.utils.TimestampArgumentValidator;
 
-import java.io.IOException;
+import java.util.List;
 
 public class Main {
 
@@ -49,6 +50,7 @@ public class Main {
                 String jksTruststoreFile = commander.getTruststoreFile();
                 String certificateFile = commander.getPublicCertificate();
                 String privateKeyFile = commander.getPrivateKeyFile();
+                boolean embeddedCert = commander.isEmbedded();
                 boolean defaultKey = commander.isDefaultKey();
                 String rimEventLog = commander.getRimEventLog();
                 switch (createType) {
@@ -63,6 +65,9 @@ public class Main {
                             gateway.setDefaultCredentials(false);
                             gateway.setPemCertificateFile(certificateFile);
                             gateway.setPemPrivateKeyFile(privateKeyFile);
+                            if (embeddedCert) {
+                                gateway.setEmbeddedCert(true);
+                            }
                         } else if (defaultKey){
                             gateway.setDefaultCredentials(true);
                             gateway.setJksTruststoreFile(SwidTagConstants.DEFAULT_KEYSTORE_FILE);
@@ -76,6 +81,17 @@ public class Main {
                             System.exit(1);
                         } else {
                             gateway.setRimEventLog(rimEventLog);
+                        }
+                        List<String> timestampArguments = commander.getTimestampArguments();
+                        if (timestampArguments.size() > 0) {
+                            if (new TimestampArgumentValidator(timestampArguments).isValid()) {
+                                gateway.setTimestampFormat(timestampArguments.get(0));
+                                if (timestampArguments.size() > 1) {
+                                    gateway.setTimestampArgument(timestampArguments.get(1));
+                                }
+                            } else {
+                                System.exit(1);
+                            }
                         }
                         gateway.generateSwidTag(commander.getOutFile());
                         break;

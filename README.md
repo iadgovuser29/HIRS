@@ -1,7 +1,5 @@
 <h1><center>Host Integrity at Runtime and Start-up (HIRS) <BR\></center></h1>
 
-[![Build Status](https://travis-ci.org/nsacyber/HIRS.svg?branch=master)](https://travis-ci.org/nsacyber/HIRS)
-
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
 The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur interest and adoption of the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning of both the TPM 1.2 and [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with an [Attestation Identity Credential (AIC)](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The ACA can be configured to enforce the Validation of Endorsement and Platform Credentials to illustrate a supply chain validation capability. 
@@ -16,6 +14,8 @@ Version 2.0 added support for the [PC Client Reference Integrity Manifest (RIM) 
 
 To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/HIRS/tree/master/tools) has been added to the HIRS project which contains a [tcg_rim_tool command line application](https://github.com/nsacyber/HIRS/tree/master/tools/tcg_rim_tool). The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/master/tools/tcg_rim_tool/README.md) for more details.
 
+**Notice:** Github Dicussions have been enabled for this repo. Please refer to the Dicussion entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for development and support notifications.
+ 
 ## Features
 
 * TPM Provisioner
@@ -55,8 +55,8 @@ The HIRS Provisioner supports both types of TPMs, 1.2 and 2.0. TPM 1.2 support i
 
 For detailed instructions, see [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes).
 
-Packages used for installation (e.g. HIRS_Provisioner*el7.noarch.rpm) can be found on the [release page](https://github.com/nsacyber/HIRS/releases).
-
+Packages used for installation (e.g. HIRS_Provisioner*el7.noarch.rpm) can be found on the [release page](https://github.com/nsacyber/HIRS/releases). 
+ 
 ### Installing the ACA
 
 Simply run the command `yum install HIRS_AttestationCA*el6.noarch.rpm` or `yum install HIRS_AttestationCA*el7.noarch.rpm` based on your OS.
