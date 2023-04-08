@@ -5,7 +5,7 @@ jobs:
   linux-gradle-builder:
     name:
     runs-on: ubuntu-latest
-    continue-on-error: false
+    continue-on-error: false # set to true for debugging
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
@@ -73,7 +73,7 @@ jobs:
   linux-dotnet-builder:
     name:
     runs-on: ubuntu-latest
-    continue-on-error: false
+    continue-on-error: false # set to true for debugging
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
