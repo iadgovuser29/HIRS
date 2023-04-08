@@ -64,6 +64,7 @@ jobs:
           name: HIRS_Provisioner_TPM_2_0.rpm
           path: /tmp/hirs-builders/centos7/*Prov*2_0*el7*
       - name: Setup tmate session on error
+        id: tmate_section
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 5 # The ssh session will be available for 5 minutes.
