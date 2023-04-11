@@ -9,7 +9,7 @@ jobs:
       matrix:                 # options is as easy as adding them here
         include:              # (not likely)
          - os: windows-2022
-    continue-on-error: true
+    continue-on-error: false # set to true for debugging
     steps:
       - name: Set git autocrlf to false # to avoid line ending issues
         run: |
