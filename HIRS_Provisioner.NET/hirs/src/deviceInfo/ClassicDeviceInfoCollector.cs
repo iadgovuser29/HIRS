@@ -148,7 +148,7 @@ namespace hirs {
                     hw.ProductName = FileToString(LINUX_DEFAULT_PRODUCT_NAME_PATH, NOT_SPECIFIED);
                 }
                 if (string.IsNullOrEmpty(hw.ProductVersion)) {
-                    hw.ProductVersion = FileToString(LINUX_DEFAULT_PRODUCT_VERSION_PATH, NOT_SPECIFIED);
+                    hw.ProductVersion = FileToString(LINUX_DEFAULT_PRODUCT_VERSION_PATH, "");
                 }
                 if (string.IsNullOrEmpty(hw.SystemSerialNumber)) {
                     hw.SystemSerialNumber = FileToString(LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
