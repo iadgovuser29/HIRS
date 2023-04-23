@@ -33,31 +33,9 @@ jobs:
           # Setup env
           sudo mkdir -p /mnt/hirs-ci/{builds,logs}
           sudo chmod -R 777 /mnt/hirs-ci
-      - name: Test flag
-        if: ${{ env.HIRS_CI_SKIP_DOTNET }}
-        run: |
-          echo "HIRS_CI_SKIP_DOTNET was "
-          echo "${{ env.HIRS_CI_SKIP_DOTNET }}"
-      - name: Test flag 2
-        if: ${{ env.HIRS_CI_USE_PREBUILT_ACA }} == false
-        run: |
-          echo "HIRS_CI_USE_PREBUILT_ACA was "
-          echo "${{ env.HIRS_CI_USE_PREBUILT_ACA }}"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '8'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-      - name: Run the Gradle package task
-        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-        with:
-          arguments: clean build
       - name: "Run tests"
         run: |
           pwd
