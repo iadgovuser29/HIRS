@@ -19,36 +19,40 @@ public class Commander {
     private String createType = "";
     @Parameter(names = {"-a", "--attributes <path>"}, order = 1,
             description = "The configuration file holding attributes "
-            + "to populate the base RIM with.")
+                    + "to populate the base RIM with.")
     private String attributesFile = "";
     @Parameter(names = {"-o", "--out <path>"}, order = 2,
             description = "The file to write the RIM out to. "
-            + "The RIM will be written to stdout by default.")
+                    + "The RIM will be written to stdout by default.")
     private String outFile = "";
-    @Parameter(names = {"-v", "--verify <path>"}, order = 3,
+    @Parameter(names = {"-s", "--sign <path>"}, order = 3,
+            validateWith = FileArgumentValidator.class,
+            description = "Generate a detached signature for the file at <path>")
+    private String signFile = "";
+    @Parameter(names = {"-v", "--verify <path>"}, order = 4,
             description = "Specify a RIM file to verify.")
     private String verifyFile = "";
-    @Parameter(names = {"-t", "--truststore <path>"}, order = 4,
+    @Parameter(names = {"-t", "--truststore <path>"}, order = 5,
             description = "The truststore to sign the base RIM created "
-            + "or to validate the signed base RIM.")
+                    + "or to validate the signed base RIM.")
     private String truststoreFile = "";
-    @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 5,
+    @Parameter(names = {"-k", "--privateKeyFile <path>"}, order = 6,
             description = "The private key used to sign the base RIM created by this tool.")
     private String privateKeyFile = "";
-    @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 6,
+    @Parameter(names = {"-p", "--publicCertificate <path>"}, order = 7,
             description = "The public key certificate to embed in the base RIM created by "
-            + "this tool.")
+                    + "this tool.")
     private String publicCertificate = "";
-    @Parameter(names = {"-e", "--embed-cert"}, order = 7,
+    @Parameter(names = {"-e", "--embed-cert"}, order = 8,
             description = "Embed the provided certificate in the signed swidtag.")
     private boolean embedded = false;
-    @Parameter(names = {"-d", "--default-key"}, order = 8,
-            description = "Use default signing credentials.")
+    @Parameter(names = {"-d", "--default-key"}, order = 9,
+            description = "Use keystore.jks from the rimtool installation to sign.")
     private boolean defaultKey = false;
-    @Parameter(names = {"-l", "--rimel <path>"}, order = 9,
+    @Parameter(names = {"-l", "--rimel <path>"}, order = 10, required = true,
             description = "The TCG eventlog file to use as a support RIM.")
     private String rimEventLog = "";
-    @Parameter(names = {"--timestamp"}, order = 10, variableArity = true,
+    @Parameter(names = {"--timestamp"}, order = 11, variableArity = true,
             description = "Add a timestamp to the signature. " +
                     "Currently only RFC3339 and RFC3852 are supported:\n" +
                     "\tRFC3339 [yyyy-MM-ddThh:mm:ssZ]\n\tRFC3852 <counterSignature.bin>")
@@ -70,11 +74,17 @@ public class Commander {
         return outFile;
     }
 
+    public String getSignFile() {
+        return signFile;
+    }
+
     public String getVerifyFile() {
         return verifyFile;
     }
 
-    public String getTruststoreFile() { return truststoreFile; }
+    public String getTruststoreFile() {
+        return truststoreFile;
+    }
 
     public String getPrivateKeyFile() {
         return privateKeyFile;
@@ -84,11 +94,17 @@ public class Commander {
         return publicCertificate;
     }
 
-    public boolean isEmbedded() { return embedded; }
+    public boolean isEmbedded() {
+        return embedded;
+    }
 
-    public boolean isDefaultKey() { return defaultKey; }
+    public boolean isDefaultKey() {
+        return defaultKey;
+    }
 
-    public String getRimEventLog() { return rimEventLog; }
+    public String getRimEventLog() {
+        return rimEventLog;
+    }
 
     public List<String> getTimestampArguments() {
         return timestampArguments;
@@ -103,13 +119,17 @@ public class Commander {
                 "\n\n\n");
         sb.append("Create a base RIM using the default attribute values; ");
         sb.append("sign it using privateKey.pem; embed cert.pem in the signature block; ");
-        sb.append("and write the data to console output:\n\n");
+        sb.append("and write the data to console stdout:\n\n");
         sb.append("\t\t-c base -l support_rim.bin -k privateKey.pem -p cert.pem -e\n\n\n");
         sb.append("Create a base RIM using the values in attributes.json; " +
                 "sign it with the default keystore; add a RFC3852 timestamp; ");
         sb.append("and write the data to base_rim.swidtag:\n\n");
         sb.append("\t\t-c base -a attributes.json -d -l support_rim.bin " +
                 "--timestamp RFC3852 counterSignature.bin -o base_rim.swidtag\n\n\n");
+        sb.append("Add another signature to a signed base RIM using privateKey.pem; ");
+        sb.append("embed cert.pem in the signature block; ");
+        sb.append("and write the output to console stdout:\n\n");
+        sb.append("\t\t-s signed_base_rim.swidtag -k privateKey.pem -p cert.pem -e\n\n\n");
         sb.append("Validate a base RIM using an external support RIM to override the ");
         sb.append("payload file:\n\n");
         sb.append("\t\t-v base_rim.swidtag -l support_rim.bin\n\n\n");
@@ -119,25 +139,23 @@ public class Commander {
 
         return sb.toString();
     }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Creating: " + this.getCreateType() + System.lineSeparator());
         sb.append("Using attributes file: " + this.getAttributesFile() + System.lineSeparator());
         sb.append("Write to: " + this.getOutFile() + System.lineSeparator());
+        sb.append("Signing file: " + this.getSignFile() + System.lineSeparator());
         sb.append("Verify file: " + this.getVerifyFile() + System.lineSeparator());
-        if (!this.getTruststoreFile().isEmpty()) {
+        if (this.isDefaultKey()) {
+            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
+                    + System.lineSeparator());
+        } else {
             sb.append("Truststore file: " + this.getTruststoreFile() + System.lineSeparator());
-        } else if (!this.getPrivateKeyFile().isEmpty() &&
-                    !this.getPublicCertificate().isEmpty()) {
             sb.append("Private key file: " + this.getPrivateKeyFile() + System.lineSeparator());
             sb.append("Public certificate: " + this.getPublicCertificate()
                     + System.lineSeparator());
             sb.append("Embedded certificate: " + this.isEmbedded() + System.lineSeparator());
-        } else if (this.isDefaultKey()){
-            sb.append("Truststore file: default (" + SwidTagConstants.DEFAULT_KEYSTORE_FILE + ")"
-                    + System.lineSeparator());
-        } else {
-            sb.append("Signing credential: (none given)" + System.lineSeparator());
         }
         sb.append("Event log support RIM: " + this.getRimEventLog() + System.lineSeparator());
         List<String> timestampArguments = this.getTimestampArguments();

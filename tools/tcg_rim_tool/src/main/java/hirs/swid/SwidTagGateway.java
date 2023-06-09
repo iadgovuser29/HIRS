@@ -10,6 +10,9 @@ import hirs.swid.xjc.SoftwareIdentity;
 import hirs.swid.xjc.SoftwareMeta;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.json.Json;
 import javax.json.JsonException;
@@ -41,6 +44,7 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -57,7 +61,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -84,7 +90,7 @@ public class SwidTagGateway {
     private Marshaller marshaller;
     private String attributesFile;
     private boolean defaultCredentials;
-    private String jksTruststoreFile;
+    private String truststoreFile;
     private String pemPrivateKeyFile;
     private String pemCertificateFile;
     private boolean embeddedCert;
@@ -102,6 +108,7 @@ public class SwidTagGateway {
             marshaller = jaxbContext.createMarshaller();
             attributesFile = SwidTagConstants.DEFAULT_ATTRIBUTES_FILE;
             defaultCredentials = true;
+            truststoreFile = "";
             pemCertificateFile = "";
             embeddedCert = false;
             rimEventLog = "";
@@ -133,12 +140,12 @@ public class SwidTagGateway {
     }
 
     /**
-     * Setter for JKS keystore file
+     * Setter for keystore file
      *
-     * @param jksTruststoreFile
+     * @param truststoreFile
      */
-    public void setJksTruststoreFile(final String jksTruststoreFile) {
-        this.jksTruststoreFile = jksTruststoreFile;
+    public void setTruststoreFile(final String truststoreFile) {
+        this.truststoreFile = truststoreFile;
     }
 
     /**
@@ -179,6 +186,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp format in XML signature
+     *
      * @param timestampFormat
      */
     public void setTimestampFormat(String timestampFormat) {
@@ -187,6 +195,7 @@ public class SwidTagGateway {
 
     /**
      * Setter for timestamp input - RFC3852 + file or RFC3339 + value
+     *
      * @param timestampArgument
      */
     public void setTimestampArgument(String timestampArgument) {
@@ -245,7 +254,7 @@ public class SwidTagGateway {
                 writeSwidTagFile(signedSoftwareIdentity, filename);
             } else {
                 System.out.println("The following fields cannot be empty or null: "
-                        + errorRequiredFields.substring(0, errorRequiredFields.length()-2));
+                        + errorRequiredFields.substring(0, errorRequiredFields.length() - 2));
                 System.exit(1);
             }
         } catch (JsonException e) {
@@ -307,6 +316,7 @@ public class SwidTagGateway {
             if (!tagId.isEmpty()) {
                 swidTag.setTagId(tagId);
             }
+            swidTag.getOtherAttributes().put(new QName("id"), tagId);
             swidTag.setTagVersion(new BigInteger(
                     jsonObject.getString(SwidTagConstants.TAGVERSION, "0")));
             swidTag.setVersion(jsonObject.getString(SwidTagConstants.VERSION, "0.0"));
@@ -531,6 +541,7 @@ public class SwidTagGateway {
             addNonNullAttribute(attributes, key, value);
         }
     }
+
     /**
      * This utility method checks if an attribute value is empty before adding it to the map.
      *
@@ -543,6 +554,120 @@ public class SwidTagGateway {
         if (!value.isEmpty()) {
             attributes.put(key, value);
         }
+    }
+
+    private void printXmlAttributes(Node node) {
+        org.w3c.dom.NamedNodeMap attributes = node.getAttributes();
+        if (attributes.getLength() <= 0) {
+            System.out.println("No attributes in this node");
+        } else {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                System.out.println("SoftwareIdentity attribute: " + attributes.item(i).getNodeName());
+            }
+        }
+    }
+
+    public Document signXMLDocument(String signFile) {
+        //Read signFile contents
+        String xmlToSign = "";
+        URI fileUri = new File(signFile).toURI();
+        try {
+            byte[] fileContents = Files.readAllBytes(Paths.get(signFile));
+            xmlToSign = new String(fileContents);    //safe to assume default charset??
+        } catch (IOException e) {
+            System.out.println("Error reading contents of " + signFile);
+            System.exit(1);
+        }
+
+        //Parse SoftwareIdentity id
+        Document swidTag = null;
+        DocumentBuilder db = null;
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(false);
+            db = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            System.out.println("Error instantiating DocumentBuilder object: " + e.getMessage());
+            System.exit(1);
+        }
+        try {
+            swidTag = db.parse(new InputSource(new StringReader(xmlToSign)));
+        } catch (IOException | SAXException e) {
+            System.out.println("Error parsing XML from " + signFile);
+            System.exit(1);
+        }
+        Element softwareIdentity = (Element) swidTag.getElementsByTagName(
+                    SwidTagConstants.SOFTWARE_IDENTITY).item(0);
+        String softwareIdentityId = softwareIdentity.getAttributes()
+                    .getNamedItem("id").getNodeValue();
+
+        //Create signature with a reference to SoftwareIdentity id
+        XMLSignatureFactory sigFactory = null;
+        SignedInfo signedInfo = null;
+        try {
+            sigFactory = XMLSignatureFactory.getInstance("DOM");
+            //ref must be distinguished from existing <Reference URI="">
+            Reference ref = sigFactory.newReference(fileUri.toString(),
+                    sigFactory.newDigestMethod(DigestMethod.SHA256, null));
+            signedInfo = sigFactory.newSignedInfo(
+                    sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                            (C14NMethodParameterSpec) null),
+                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
+                            null),
+                    Collections.singletonList(ref)
+            );
+        } catch (InvalidAlgorithmParameterException e) {
+            System.out.println("Digest method parameters are invalid: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("The digest algorithm could not be found: " + e.getMessage());
+        }
+        List<XMLStructure> keyInfoElements = new ArrayList<XMLStructure>();
+
+        KeyInfoFactory kiFactory = sigFactory.getKeyInfoFactory();
+        PrivateKey privateKey = null;
+        CredentialParser cp = new CredentialParser();
+        try {
+            if (defaultCredentials) {
+                cp.parseDefaultCredentials();
+                privateKey = cp.getPrivateKey();
+                KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+                keyInfoElements.add(keyName);
+            } else {
+                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                X509Certificate certificate = cp.getCertificate();
+                privateKey = cp.getPrivateKey();
+                if (embeddedCert) {
+                    ArrayList<Object> x509Content = new ArrayList<Object>();
+                    x509Content.add(certificate.getSubjectX500Principal().getName());
+                    x509Content.add(certificate);
+                    X509Data data = kiFactory.newX509Data(x509Content);
+                    keyInfoElements.add(data);
+                } else {
+                    keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error getting SKID from signing credentials: " + e.getMessage());
+        } catch (KeyException e) {
+            System.out.println("Public key algorithm not recognized or supported: "
+                    + e.getMessage());
+        } catch (Exception e) {
+             e.printStackTrace();
+        }
+        KeyInfo keyinfo = kiFactory.newKeyInfo(keyInfoElements);
+
+        Document detachedSignature = db.newDocument();
+        DOMSignContext context = new DOMSignContext(privateKey, detachedSignature);
+        context.setIdAttributeNS(softwareIdentity, null, "id");
+        XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyinfo);
+        try {
+            signature.sign(context);
+        } catch (MarshalException | XMLSignatureException e) {
+            System.out.println("Error while signing SoftwareIdentity");
+            e.printStackTrace();
+        }
+
+        return detachedSignature;
     }
 
     /**
@@ -593,14 +718,19 @@ public class SwidTagGateway {
             PrivateKey privateKey;
             CredentialParser cp = new CredentialParser();
             if (defaultCredentials) {
-                cp.parseJKSCredentials(jksTruststoreFile);
+                cp.parseDefaultCredentials();
                 privateKey = cp.getPrivateKey();
                 KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
                 keyInfoElements.add(keyName);
             } else {
-                cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
-                X509Certificate certificate = cp.getCertificate();
+                if (!truststoreFile.isEmpty()) {
+                    List<X509Certificate> truststore = cp.parseCertsFromPEM(truststoreFile);
+                    cp.parsePEMCredentials(truststore, pemPrivateKeyFile);
+                } else {
+                    cp.parsePEMCredentials(pemCertificateFile, pemPrivateKeyFile);
+                }
                 privateKey = cp.getPrivateKey();
+                X509Certificate certificate = cp.getCertificate();
                 if (embeddedCert) {
                     ArrayList<Object> x509Content = new ArrayList<Object>();
                     x509Content.add(certificate.getSubjectX500Principal().getName());
@@ -608,6 +738,8 @@ public class SwidTagGateway {
                     X509Data data = kiFactory.newX509Data(x509Content);
                     keyInfoElements.add(data);
                 } else {
+                    KeyName keyName = kiFactory.newKeyName(cp.getCertificateSubjectKeyIdentifier());
+                    keyInfoElements.add(keyName);
                     keyInfoElements.add(kiFactory.newKeyValue(certificate.getPublicKey()));
                 }
             }
@@ -646,7 +778,8 @@ public class SwidTagGateway {
     /**
      * This method creates a timestamp element and populates it with data according to
      * the RFC format set in timestampFormat.  The element is returned within an XMLObject.
-     * @param doc the Document representing the XML to be signed
+     *
+     * @param doc        the Document representing the XML to be signed
      * @param sigFactory the SignatureFactory object
      * @return an XMLObject containing the timestamp element
      */
@@ -687,7 +820,7 @@ public class SwidTagGateway {
         SignatureProperties signatureProperties = sigFactory.newSignatureProperties(
                 Collections.singletonList(signatureProperty), null);
         XMLObject xmlObject = sigFactory.newXMLObject(
-                Collections.singletonList(signatureProperties), null,null,null);
+                Collections.singletonList(signatureProperties), null, null, null);
 
         return xmlObject;
     }
